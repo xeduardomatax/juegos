@@ -1,6 +1,15 @@
 {
+  "name": "juegos-educativos",
+  "version": "1.0.0",
+  "description": "Juegos educativos con Cálculo Mental y AR",
+  "main": "upload-server.js",
+  "scripts": {
+    "start": "node upload-server.js",
+    "dev": "node upload-server.js"
+  },
   "dependencies": {
     "express": "^5.1.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "cors": "^2.8.5"
   }
 }

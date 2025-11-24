@@ -2,9 +2,17 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
+// Habilitar CORS
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: false
+}));
 
 // Carpetas destino
 const IMAGE_DIR = path.join(__dirname, 'CalculoMental', 'Imagen');

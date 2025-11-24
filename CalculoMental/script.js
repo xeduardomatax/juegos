@@ -1,3 +1,9 @@
+// ===== CONFIGURACIÓN DE SERVIDOR =====
+// Detecta automáticamente si es local o en línea
+const SERVER_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3001'
+    : 'https://juegos-api.onrender.com'; // O el servidor que despliegues
+
 // Datos del juego
 const gameData = {
     operation: '',
@@ -836,7 +842,7 @@ function showWaitingScreen() {
                 formData.append('image', selectedFile);
                 uploadBtn.disabled = true;
                 uploadBtn.textContent = 'Subiendo...';
-                fetch('http://localhost:3001/upload-image', {
+                fetch(`${SERVER_URL}/upload-image`, {
                     method: 'POST',
                     body: formData
                 })
@@ -949,7 +955,7 @@ function showWaitingScreen() {
                 formData.append('audio', selectedFile);
                 uploadBtn.disabled = true;
                 uploadBtn.textContent = 'Subiendo...';
-                fetch('http://localhost:3001/upload-audio', {
+                fetch(`${SERVER_URL}/upload-audio`, {
                     method: 'POST',
                     body: formData
                 })
@@ -1062,7 +1068,7 @@ function showWaitingScreen() {
                 formData.append('video', selectedFile);
                 uploadBtn.disabled = true;
                 uploadBtn.textContent = 'Subiendo...';
-                fetch('http://localhost:3001/upload-video', {
+                fetch(`${SERVER_URL}/upload-video`, {
                     method: 'POST',
                     body: formData
                 })
@@ -2059,7 +2065,7 @@ window.addEventListener('load', () => {
 // Nueva función para obtener la URL de la última imagen subida
 async function getLastUploadedImageUrl() {
     try {
-        const res = await fetch('http://localhost:3001/imagenes/ultima');
+        const res = await fetch(`${SERVER_URL}/imagenes/ultima`);
         if (!res.ok) return '';
         const data = await res.json();
         return data.url || '';
@@ -2070,7 +2076,7 @@ async function getLastUploadedImageUrl() {
 
 async function getLastUploadedAudioUrl() {
     try {
-        const res = await fetch('http://localhost:3001/audios/ultima');
+        const res = await fetch(`${SERVER_URL}/audios/ultima`);
         if (!res.ok) return '';
         const data = await res.json();
         return data.url || '';
@@ -2081,7 +2087,7 @@ async function getLastUploadedAudioUrl() {
 
 async function getLastUploadedVideoUrl() {
     try {
-        const res = await fetch('http://localhost:3001/videos/ultima');
+        const res = await fetch(`${SERVER_URL}/videos/ultima`);
         if (!res.ok) return '';
         const data = await res.json();
         return data.url || '';
