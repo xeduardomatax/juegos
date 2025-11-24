@@ -1,0 +1,9 @@
+{
+  "name": "juegos-upload-server",
+  "version": "1.0.0",
+  "main": "upload-server.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5"
+  }
+}

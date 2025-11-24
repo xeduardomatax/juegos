@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Mental Unificada</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- AR.js para Realidad Aumentada -->
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.5/aframe/build/aframe-ar-nft.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Pantalla del generador -->
+        <div id="generator-screen">
+            <h1>Cálculo Mental</h1>
+            <div class="level-section">
+                <label for="level-select"><strong>Selecciona nivel de dificultad:</strong></label>
+                <select id="level-select">
+                    <option value="basico">Básico (Sumas y Restas)</option>
+                    <option value="intermedio">Intermedio (Sumas, Restas y Divisiones)</option>
+                    <option value="avanzado">Avanzado (Todas las operaciones)</option>
+                </select>
+                <span id="available-exercises"></span>
+            </div>
+            <div class="exercise-count-section">
+                <label for="exercise-count"><strong>¿Cuántos ejercicios quieres hacer?</strong></label>
+                <select id="exercise-count">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div id="game-options">
+                <button id="startGameBtn">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- Pantalla del juego -->
+        <div id="game-screen" class="hidden">
+            <h1>Cálculo Mental</h1>
+            <div id="operation-display"></div>
+            <div id="options-container"></div>
+            <div id="validate"></div>
+            <div id="score-display">Puntuación: 0</div>
+            <button id="back-btn">Volver al Generador</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

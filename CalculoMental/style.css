@@ -1,0 +1,255 @@
+:root {
+    --primary: #4361ee;
+    --secondary: #3a0ca3;
+    --success: #4cc9f0;
+    --danger: #f72585;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --border-radius: 16px;
+    --shadow: 0 8px 24px rgba(67, 97, 238, 0.12);
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #e0e7ff 0%, #f1f5fe 100%);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.app-container {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 600px;
+    min-height: 100%;
+    position: relative;
+    animation: popin 0.7s;
+}
+
+@keyframes popin {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+h1 {
+    color: var(--secondary);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 2.3rem;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px #e0e7ff;
+}
+
+.level-section, .exercise-count-section, #game-options {
+    background: linear-gradient(90deg, #e0e7ff 60%, #f8f9fa 100%);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px #4361ee22;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    color: var(--secondary);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+select, input[type="number"] {
+    padding: 0.7rem;
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    font-size: 1.1rem;
+    background: #f5faff;
+    transition: border 0.2s;
+    margin-bottom: 0.5rem;
+}
+
+select:focus, input[type="number"]:focus {
+    border-color: var(--success);
+    background: #e0e7ff;
+}
+
+button {
+    background: linear-gradient(90deg, var(--primary) 60%, var(--success) 100%);
+    color: white;
+    border: none;
+    padding: 0.9rem 1.7rem;
+    border-radius: 18px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px #4361ee33;
+    margin: 0.5rem 0;
+    transition: background 0.2s, transform 0.15s;
+    animation: bounceBtn 1.2s infinite alternate;
+}
+
+@keyframes bounceBtn {
+    0% { transform: translateY(0);}
+    100% { transform: translateY(-6px);}
+}
+
+button:hover {
+    background: linear-gradient(90deg, var(--success) 60%, var(--primary) 100%);
+    transform: scale(1.08);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#operation-display {
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 1.5rem 0;
+    min-height: 60px;
+    text-align: center;
+    background: linear-gradient(90deg, #e0e7ff 60%, #f8f9fa 100%);
+    border-radius: 18px;
+    box-shadow: 0 2px 8px #4361ee22;
+    padding: 1rem 0.5rem;
+    letter-spacing: 2px;
+    animation: fadeIn 0.7s;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0;}
+    100% { opacity: 1;}
+}
+
+#options-container {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+#options-container button {
+    background: linear-gradient(90deg, #f8f9fa 60%, #e0e7ff 100%);
+    color: var(--dark);
+    border: 2px solid var(--primary);
+    border-radius: 14px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px #4361ee22;
+    transition: background 0.2s, transform 0.15s;
+    animation: bounceBtn 1.2s infinite alternate;
+}
+
+#options-container button:hover {
+    background: linear-gradient(90deg, #4cc9f0 60%, #f8f9fa 100%);
+    color: var(--secondary);
+    transform: scale(1.08);
+}
+
+#options-container button.correct {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+    animation: correctAnim 0.7s;
+}
+
+@keyframes correctAnim {
+    0% { background: #fff; color: var(--success);}
+    100% { background: var(--success); color: #fff;}
+}
+
+#options-container button.incorrect {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+    animation: incorrectAnim 0.7s;
+}
+
+@keyframes incorrectAnim {
+    0% { background: #fff; color: var(--danger);}
+    100% { background: var(--danger); color: #fff;}
+}
+
+#score-display {
+    font-weight: bold;
+    text-align: center;
+    margin: 1rem 0;
+    color: var(--secondary);
+    font-size: 1.3rem;
+    background: linear-gradient(90deg, #e0e7ff 60%, #f8f9fa 100%);
+    border-radius: 14px;
+    box-shadow: 0 2px 8px #4361ee22;
+    padding: 0.7rem 0;
+}
+
+#back-btn {
+    background: linear-gradient(90deg, var(--light) 60%, #e0e7ff 100%);
+    color: var(--dark);
+    margin-top: 1.5rem;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px #4361ee22;
+    animation: bounceBtn 1.2s infinite alternate;
+}
+
+#back-btn:hover {
+    background: linear-gradient(90deg, #f72585 60%, #f8f9fa 100%);
+    color: white;
+    transform: scale(1.08);
+}
+
+span#available-exercises {
+    font-size: 1.1rem;
+    color: var(--primary);
+    font-weight: 600;
+    margin-left: 0.5rem;
+    background: #e0e7ff;
+    border-radius: 8px;
+    padding: 0.2rem 0.7rem;
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        padding: 1rem;
+        max-width: 98vw;
+    }
+    h1 {
+        font-size: 1.5rem;
+    }
+    #operation-display {
+        font-size: 1.2rem;
+        padding: 0.8rem 1.5rem;
+    }
+    #options-container {
+        grid-template-columns: 1fr;
+    }
+    #options-container button {
+        font-size: 1rem;
+        padding: 0.8rem;
+    }
+    #score-display {
+        font-size: 1rem;
+        padding: 0.5rem 0;
+    }
+    #back-btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}

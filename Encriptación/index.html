@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>El mensaje escondido</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:ital,wght@1,400;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Layout dividido: imagen (izquierda) y juego (derecha). Oculto por defecto; se muestra tras Iniciar juego -->
+    <div class="split-layout" style="display:none;">
+        <aside class="left-pane">
+            <div class="container">
+                <h1>El mensaje escondido</h1>
+                <!-- Imagen de referencia para la encriptación -->
+                <div id="reference-image">
+                    <img src="Encriptación.jpg" alt="Tabla de encriptación">
+                    <div style="font-size:0.95em; color:#1565c0; margin-bottom:1em;">Usa la tabla para descifrar el mensaje</div>
+                    <div style="margin-top:0.5em;">
+                        <button id="explain-btn" class="explain-btn">Explicación</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="right-pane">
+            <div class="container game-container">
+                <div id="level">Nivel 1</div>
+                <div id="score" style="color:#1565c0; font-size:1.1em; margin-bottom:0.5em;">
+                    Puntuación: <span id="score-value">0</span>
+                </div>
+                <div id="encrypted-message"></div>
+                <div id="space-hint" style="color:#1976d2; font-size:1em; margin-bottom:1em;">
+                    <b>Nota:</b> Los espacios en el mensaje encriptado indican separación entre palabras.
+                </div>
+                <input type="text" id="user-input" placeholder="Escribe el mensaje original">
+                <button id="check-btn">Comprobar</button>
+                <div id="feedback">
+                    <img id="character" src="https://cdn.pixabay.com/photo/2013/07/13/12/07/smiley-145924_1280.png" alt="Personaje" style="display:none;">
+                    <span id="result"></span>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div id="generator-screen" class="container" style="margin-bottom: 20px;">
+        <h2>Generador de retos</h2>
+        <label for="level-select">Nivel:</label>
+        <select id="level-select">
+            <option value="basico">Básico</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
+        </select>
+        <br><br>
+        <label for="challenge-count">Cantidad de retos:</label>
+        <input type="number" id="challenge-count" min="1" max="5" value="5" style="width:60px;">
+        <br><br>
+        <button id="start-game-btn">Iniciar juego</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desafíos de Programación por bloques</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/msg/es.js"></script>
+  <!-- A-Frame y AR.js -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.3.0/aframe/build/aframe-ar-nft.js"></script>
+</head>
+<body>
+  <div class="header">
+    <h1>Desafíos de Programación</h1>
+    <div class="controls">
+      <button id="newChallenge">Nuevo Desafío</button>
+      <select id="difficulty">
+        <option value="easy">Básico</option>
+        <option value="medium" selected>Intermedio</option>
+        <option value="hard">Avanzado</option>
+      </select>
+      <button id="downloadProject">Descargar Proyecto</button>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="problem-section">
+      <h2>Desafío</h2>
+      <div id="problemDescription"></div>
+      <div id="testCases"></div>
+      <div class="instructions">
+        <h3>Instrucciones:</h3>
+        <p>1. Arrastra bloques desde el panel central para crear tu solución</p>
+        <p>2. Usa bloques de la categoría "Funciones" para definir tu solución</p>
+        <p>3. Haz clic en "Ejecutar Solución" para probar tu código</p>
+        <p>4. Usa bloques de texto para problemas que requieran manipulación de cadenas</p>
+        <p>5. Usa bloques de lista para problemas con arreglos</p>
+      </div>
+    </div>
+    
+    <div id="blocklyDiv"></div>
+    
+    <div class="output-section">
+      <h2>Resultado</h2>
+      <button id="runCode">Ejecutar Solución</button>
+      <div id="executionResult"></div>
+    </div>
+  </div>
+
+  <template id="sceneTplError">
+      <a-scene>
+        <a-assets>
+            <img id="emj" src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f44e.png">
+        </a-assets>
+        <a-text 
+            value="Proceso incorrecto" 
+            position="-0.2 1.5 -2" 
+            color="red" 
+            align="center" 
+            width="4"
+            font="roboto">
+        </a-text>
+        <a-image 
+            src="#emj" 
+            width="0.15" 
+            height="0.15" 
+            position="0.7 1.5 -2">
+        </a-image>
+        <a-entity 
+            camera 
+            look-controls 
+            wasd-controls 
+            position="0 1.6 0"
+        ></a-entity>
+      </a-scene>
+  </template>
+
+  <template id="sceneTpl">
+      <a-scene>
+        <a-assets>
+            <img id="emj" src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f44d.png">
+        </a-assets>
+        <a-text 
+            value="¡Problema resuelto!" 
+            position="-0.2 1.5 -2" 
+            color="green" 
+            align="center" 
+            width="4"
+            font="roboto">
+        </a-text>
+        <a-image 
+            src="#emj" 
+            width="0.15" 
+            height="0.15" 
+            position="0.7 1.5 -2">
+        </a-image>
+        <a-entity 
+            camera 
+            look-controls 
+            wasd-controls 
+            position="0 1.6 0"
+        ></a-entity>
+      </a-scene>
+  </template>
+
+  <xml id="toolbox" style="display: none">
+    <category name="Lógica" colour="%{BKY_LOGIC_HUE}">
+      <block type="controls_if"></block>
+      <block type="logic_compare"></block>
+      <block type="logic_operation"></block>
+      <block type="logic_negate"></block>
+      <block type="logic_boolean"></block>
+    </category>
+    <category name="Bucles" colour="%{BKY_LOOPS_HUE}">
+      <block type="controls_repeat_ext"></block>
+      <block type="controls_whileUntil"></block>
+      <block type="controls_for"></block>
+      <block type="controls_forEach"></block>
+    </category>
+    <category name="Matemáticas" colour="%{BKY_MATH_HUE}">
+      <block type="math_number"></block>
+      <block type="math_arithmetic"></block>
+      <block type="math_single"></block>
+      <block type="math_trig"></block>
+      <block type="math_constant"></block>
+    </category>
+    <category name="Texto" colour="%{BKY_TEXTS_HUE}">
+      <block type="text"></block>
+      <block type="text_join"></block>
+      <block type="text_length"></block>
+      <block type="text_print"></block>
+      <block type="text_prompt_ext"></block>
+    </category>
+    <category name="Listas" colour="%{BKY_LISTS_HUE}">
+      <block type="lists_create_with"></block>
+      <block type="lists_repeat"></block>
+      <block type="lists_length"></block>
+      <block type="lists_isEmpty"></block>
+      <block type="lists_indexOf"></block>
+    </category>
+    <category name="Funciones" colour="%{BKY_PROCEDURES_HUE}" custom="PROCEDURE"></category>
+    <category name="Variables" colour="%{BKY_VARIABLES_HUE}" custom="VARIABLE"></category>
+  </xml>
+
+  <script src="script.js"></script>
+</body>
+</html>
