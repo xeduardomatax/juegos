@@ -2,7 +2,7 @@
 // Detecta automáticamente si es local o en línea
 const SERVER_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3001'
-    : 'https://juegos-api.onrender.com'; // O el servidor que despliegues
+    : 'https://juegos-o3jk.onrender.com';
 
 // Datos del juego
 const gameData = {
