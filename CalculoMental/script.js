@@ -4,6 +4,29 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
     ? 'http://localhost:3001'
     : 'https://juegos-o3jk.onrender.com';
 
+// Función para hacer fetch con reintentos automáticos
+async function fetchWithRetry(url, options = {}, maxRetries = 3) {
+    let lastError;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const response = await fetch(url, {
+                ...options,
+                timeout: 30000
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response;
+        } catch (error) {
+            lastError = error;
+            if (i < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+            }
+        }
+    }
+    throw lastError;
+}
+
 // Datos del juego
 const gameData = {
     operation: '',
@@ -841,8 +864,9 @@ function showWaitingScreen() {
                 const formData = new FormData();
                 formData.append('image', selectedFile);
                 uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Subiendo...';
-                fetch(`${SERVER_URL}/upload-image`, {
+                uploadBtn.textContent = 'Subiendo... (espera)';
+                
+                fetchWithRetry(`${SERVER_URL}/upload-image`, {
                     method: 'POST',
                     body: formData
                 })
@@ -862,14 +886,15 @@ function showWaitingScreen() {
                             uploadBtn.disabled = false;
                         }, 1500);
                     } else {
-                        errorMsg.textContent = 'Error al subir la imagen.';
+                        errorMsg.textContent = 'Error al subir la imagen: ' + (data.error || 'Error desconocido');
                         errorMsg.style.display = 'block';
                         uploadBtn.disabled = false;
                         uploadBtn.textContent = 'Subir imagen (.jpg, .png)';
                     }
                 })
-                .catch(() => {
-                    errorMsg.textContent = 'No se pudo conectar al servidor.';
+                .catch(err => {
+                    console.error('Error al subir imagen:', err);
+                    errorMsg.textContent = 'No se pudo conectar al servidor. Verifica tu conexión e intenta de nuevo.';
                     errorMsg.style.display = 'block';
                     uploadBtn.disabled = false;
                     uploadBtn.textContent = 'Subir imagen (.jpg, .png)';
@@ -954,8 +979,9 @@ function showWaitingScreen() {
                 const formData = new FormData();
                 formData.append('audio', selectedFile);
                 uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Subiendo...';
-                fetch(`${SERVER_URL}/upload-audio`, {
+                uploadBtn.textContent = 'Subiendo... (espera)';
+                
+                fetchWithRetry(`${SERVER_URL}/upload-audio`, {
                     method: 'POST',
                     body: formData
                 })
@@ -975,14 +1001,15 @@ function showWaitingScreen() {
                             uploadBtn.disabled = false;
                         }, 1500);
                     } else {
-                        errorMsg.textContent = 'Error al subir el audio.';
+                        errorMsg.textContent = 'Error al subir el audio: ' + (data.error || 'Error desconocido');
                         errorMsg.style.display = 'block';
                         uploadBtn.disabled = false;
                         uploadBtn.textContent = 'Subir audio (.mp3)';
                     }
                 })
-                .catch(() => {
-                    errorMsg.textContent = 'No se pudo conectar al servidor.';
+                .catch(err => {
+                    console.error('Error al subir audio:', err);
+                    errorMsg.textContent = 'No se pudo conectar al servidor. Verifica tu conexión e intenta de nuevo.';
                     errorMsg.style.display = 'block';
                     uploadBtn.disabled = false;
                     uploadBtn.textContent = 'Subir audio (.mp3)';
@@ -1067,8 +1094,9 @@ function showWaitingScreen() {
                 const formData = new FormData();
                 formData.append('video', selectedFile);
                 uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Subiendo...';
-                fetch(`${SERVER_URL}/upload-video`, {
+                uploadBtn.textContent = 'Subiendo... (espera)';
+                
+                fetchWithRetry(`${SERVER_URL}/upload-video`, {
                     method: 'POST',
                     body: formData
                 })
@@ -1088,14 +1116,15 @@ function showWaitingScreen() {
                             uploadBtn.disabled = false;
                         }, 1500);
                     } else {
-                        errorMsg.textContent = 'Error al subir el video.';
+                        errorMsg.textContent = 'Error al subir el video: ' + (data.error || 'Error desconocido');
                         errorMsg.style.display = 'block';
                         uploadBtn.disabled = false;
                         uploadBtn.textContent = 'Subir video (.mp4)';
                     }
                 })
-                .catch(() => {
-                    errorMsg.textContent = 'No se pudo conectar al servidor.';
+                .catch(err => {
+                    console.error('Error al subir video:', err);
+                    errorMsg.textContent = 'No se pudo conectar al servidor. Verifica tu conexión e intenta de nuevo.';
                     errorMsg.style.display = 'block';
                     uploadBtn.disabled = false;
                     uploadBtn.textContent = 'Subir video (.mp4)';
