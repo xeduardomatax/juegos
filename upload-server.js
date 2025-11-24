@@ -64,6 +64,16 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Endpoint de prueba para verificar configuración
+app.get('/test', (req, res) => {
+    const config = {
+        cloudinary_configured: !!cloudinary.config().cloud_name,
+        node_env: process.env.NODE_ENV || 'production',
+        timestamp: new Date().toISOString()
+    };
+    res.json(config);
+});
+
 // Subir imagen
 app.post('/upload-image', uploadImage.single('image'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No se recibió archivo.' });
