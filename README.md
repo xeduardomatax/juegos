@@ -40,6 +40,35 @@ El servidor se iniciará en `http://localhost:3001`
 4. **Abrir la aplicación**
 Accede a `http://localhost:3001` en tu navegador
 
+## 🌐 Despliegue en Línea
+
+### GitHub Pages + Render
+
+La aplicación está configurada para funcionar en dos partes:
+
+1. **Frontend (GitHub Pages)**: https://xeduardomatax.github.io/juegos/
+2. **Backend (Render)**: https://juegos-o3jk.onrender.com
+
+### Configurar Render.com
+
+Si quieres desplegar tu propio servidor backend en Render:
+
+1. Ve a [render.com](https://render.com)
+2. Conecta tu cuenta de GitHub
+3. Crea un nuevo **Web Service**
+4. Selecciona este repositorio
+5. **Variables de Entorno** (Agregar estas):
+   ```
+   CLOUDINARY_CLOUD_NAME=dyyqzm0gn
+   CLOUDINARY_API_KEY=187945893884849
+   CLOUDINARY_API_SECRET=cFh-YP7P0K4nq0Qf-3T4VLhOx3I
+   ```
+6. Build: `npm install`
+7. Start: `npm start`
+8. Espera a que se despliegue (2-3 minutos)
+
+Luego actualiza la URL en `CalculoMental/script.js` con tu URL de Render.
+
 ## 📁 Estructura del Proyecto
 
 ```

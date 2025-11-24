@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: juegos-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: CLOUDINARY_CLOUD_NAME
+        value: dyyqzm0gn
+      - key: CLOUDINARY_API_KEY
+        value: 187945893884849
+      - key: CLOUDINARY_API_SECRET
+        value: cFh-YP7P0K4nq0Qf-3T4VLhOx3I
