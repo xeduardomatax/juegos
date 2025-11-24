@@ -10,6 +10,8 @@
   "dependencies": {
     "express": "^5.1.0",
     "multer": "^2.0.2",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "cloudinary": "^1.41.0",
+    "multer-storage-cloudinary": "^4.0.0"
   }
 }

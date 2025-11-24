@@ -1,7 +1,8 @@
 const express = require('express');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const path = require('path');
-const fs = require('fs');
 const cors = require('cors');
 
 const app = express();
@@ -14,27 +15,43 @@ app.use(cors({
     credentials: false
 }));
 
-// Carpetas destino
-const IMAGE_DIR = path.join(__dirname, 'CalculoMental', 'Imagen');
-const AUDIO_DIR = path.join(__dirname, 'CalculoMental', 'Audio');
-const VIDEO_DIR = path.join(__dirname, 'CalculoMental', 'Videos');
-[IMAGE_DIR, AUDIO_DIR, VIDEO_DIR].forEach(dir => {
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+// Configurar Cloudinary con credenciales por defecto (cuenta gratuita)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dyyqzm0gn',
+    api_key: process.env.CLOUDINARY_API_KEY || '187945893884849',
+    api_secret: process.env.CLOUDINARY_API_SECRET || 'cFh-YP7P0K4nq0Qf-3T4VLhOx3I'
 });
 
-// Multer configs
-const imageStorage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, IMAGE_DIR),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + '-' + file.originalname)
+// Configurar almacenamiento en Cloudinary para imágenes
+const imageStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'juegos/imagenes',
+        resource_type: 'auto',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp']
+    }
 });
-const audioStorage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, AUDIO_DIR),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + '-' + file.originalname)
+
+// Configurar almacenamiento en Cloudinary para audios
+const audioStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'juegos/audios',
+        resource_type: 'auto',
+        allowed_formats: ['mp3', 'wav', 'ogg', 'm4a']
+    }
 });
-const videoStorage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, VIDEO_DIR),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + '-' + file.originalname)
+
+// Configurar almacenamiento en Cloudinary para videos
+const videoStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'juegos/videos',
+        resource_type: 'video',
+        allowed_formats: ['mp4', 'webm', 'ogg', 'mov']
+    }
 });
+
 const uploadImage = multer({ storage: imageStorage });
 const uploadAudio = multer({ storage: audioStorage });
 const uploadVideo = multer({ storage: videoStorage });
@@ -50,70 +67,96 @@ app.get('/', (req, res) => {
 // Subir imagen
 app.post('/upload-image', uploadImage.single('image'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No se recibió archivo.' });
-    const url = `/CalculoMental/Imagen/${req.file.filename}`;
-    res.json({ success: true, filename: req.file.filename, url: url });
+    res.json({ 
+        success: true, 
+        filename: req.file.filename, 
+        url: req.file.secure_url || req.file.url 
+    });
 });
 
-// Subir audio (solo formatos comunes y tamaño máximo 5MB)
+// Subir audio
 app.post('/upload-audio', uploadAudio.single('audio'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No se recibió archivo.' });
-    const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg'];
-    if (!allowedTypes.includes(req.file.mimetype) || req.file.size > 5 * 1024 * 1024) {
-        fs.unlinkSync(req.file.path);
-        return res.status(400).json({ error: 'Formato o tamaño de audio no permitido.' });
-    }
-    const url = `/CalculoMental/Audio/${req.file.filename}`;
-    res.json({ success: true, filename: req.file.filename, url: url });
+    res.json({ 
+        success: true, 
+        filename: req.file.filename, 
+        url: req.file.secure_url || req.file.url 
+    });
 });
 
-// Subir video (solo formatos comunes y tamaño máximo 10MB)
+// Subir video
 app.post('/upload-video', uploadVideo.single('video'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No se recibió archivo.' });
-    const allowedTypes = ['video/mp4', 'video/webm', 'video/ogg'];
-    if (!allowedTypes.includes(req.file.mimetype) || req.file.size > 10 * 1024 * 1024) {
-        fs.unlinkSync(req.file.path);
-        return res.status(400).json({ error: 'Formato o tamaño de video no permitido.' });
-    }
-    const url = `/CalculoMental/Videos/${req.file.filename}`;
-    res.json({ success: true, filename: req.file.filename, url: url });
+    res.json({ 
+        success: true, 
+        filename: req.file.filename, 
+        url: req.file.secure_url || req.file.url 
+    });
 });
 
 // Obtener última imagen
-app.get('/imagenes/ultima', (req, res) => {
-    fs.readdir(IMAGE_DIR, (err, files) => {
-        if (err || !files.length) return res.json({ url: '' });
-        const lastFile = files.map(f => ({
-            name: f,
-            time: fs.statSync(path.join(IMAGE_DIR, f)).mtime.getTime()
-        })).sort((a, b) => b.time - a.time)[0].name;
-        res.json({ url: `/CalculoMental/Imagen/${lastFile}` });
-    });
+app.get('/imagenes/ultima', async (req, res) => {
+    try {
+        const result = await cloudinary.search
+            .expression('folder:juegos/imagenes')
+            .sort_by('created_at', 'desc')
+            .max_results(1)
+            .execute();
+        
+        if (result.resources && result.resources.length > 0) {
+            const lastFile = result.resources[0];
+            res.json({ url: lastFile.secure_url });
+        } else {
+            res.json({ url: '' });
+        }
+    } catch (err) {
+        console.error('Error en /imagenes/ultima:', err);
+        res.json({ url: '' });
+    }
 });
 
 // Obtener último audio
-app.get('/audios/ultima', (req, res) => {
-    fs.readdir(AUDIO_DIR, (err, files) => {
-        if (err || !files.length) return res.json({ url: '' });
-        const lastFile = files.map(f => ({
-            name: f,
-            time: fs.statSync(path.join(AUDIO_DIR, f)).mtime.getTime()
-        })).sort((a, b) => b.time - a.time)[0].name;
-        res.json({ url: `/CalculoMental/Audio/${lastFile}` });
-    });
+app.get('/audios/ultima', async (req, res) => {
+    try {
+        const result = await cloudinary.search
+            .expression('folder:juegos/audios')
+            .sort_by('created_at', 'desc')
+            .max_results(1)
+            .execute();
+        
+        if (result.resources && result.resources.length > 0) {
+            const lastFile = result.resources[0];
+            res.json({ url: lastFile.secure_url });
+        } else {
+            res.json({ url: '' });
+        }
+    } catch (err) {
+        console.error('Error en /audios/ultima:', err);
+        res.json({ url: '' });
+    }
 });
 
 // Obtener último video
-app.get('/videos/ultima', (req, res) => {
-    fs.readdir(VIDEO_DIR, (err, files) => {
-        if (err || !files.length) return res.json({ url: '' });
-        const lastFile = files.map(f => ({
-            name: f,
-            time: fs.statSync(path.join(VIDEO_DIR, f)).mtime.getTime()
-        })).sort((a, b) => b.time - a.time)[0].name;
-        res.json({ url: `/CalculoMental/Videos/${lastFile}` });
-    });
+app.get('/videos/ultima', async (req, res) => {
+    try {
+        const result = await cloudinary.search
+            .expression('folder:juegos/videos')
+            .sort_by('created_at', 'desc')
+            .max_results(1)
+            .execute();
+        
+        if (result.resources && result.resources.length > 0) {
+            const lastFile = result.resources[0];
+            res.json({ url: lastFile.secure_url });
+        } else {
+            res.json({ url: '' });
+        }
+    } catch (err) {
+        console.error('Error en /videos/ultima:', err);
+        res.json({ url: '' });
+    }
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor de subida escuchando en http://localhost:${PORT}`);
+    console.log(`Servidor de subida escuchando en puerto ${PORT}`);
 });
