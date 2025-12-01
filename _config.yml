@@ -1,0 +1,14 @@
+markdown: kramdown
+exclude:
+  - node_modules
+  - .git
+  - .gitignore
+  - README.md
+  - Procfile
+  - render.yaml
+  - upload-server.js
+  - package.json
+  - package-lock.json
+  - "*.rar"
+plugins:
+  - jekyll-seo-tag

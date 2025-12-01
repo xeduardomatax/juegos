@@ -1,4 +1,5 @@
 // ===== CONFIGURACIÓN DE SERVIDOR =====
+// Versión: 2025-12-01 - Actualización de GitHub Pages
 // Detecta automáticamente si es local o en línea
 const SERVER_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3001'
