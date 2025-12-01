@@ -509,12 +509,13 @@ function showWaitingScreen() {
     contentContainer.style.cssText = `
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        align-items: flex-start;
+        justify-content: flex-start;
         min-height: 60vh;
         text-align: center;
         gap: 2rem;
         width: 100%;
+        padding-left: 2rem;
     `;
 
     // Título principal
@@ -551,148 +552,594 @@ function showWaitingScreen() {
     let config = {};
     try { config = JSON.parse(localStorage.getItem('gameConfig') || '{}'); } catch (e) {}
 
-    // Botones de etapa
-    const stageButtonsContainer = document.createElement('div');
-    stageButtonsContainer.style.cssText = `
+    // Checkboxes de selección de etapas (múltiple selección)
+    const stageCheckboxesContainer = document.createElement('div');
+    stageCheckboxesContainer.style.cssText = `
         display: flex;
-        gap: 1.2rem;
-        margin-bottom: 1.2rem;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
         justify-content: center;
         width: 100%;
+        flex-wrap: wrap;
     `;
+    
     const stageIcons = { 'Inicio': '🚀', 'Acierto': '✅', 'Final': '🏁' };
-    let selectedStage = stages[0];
+    const stageLetters = { 'Inicio': 'I', 'Acierto': 'A', 'Final': 'F' };
+    const stageColors = {
+        'Inicio': '#4361ee',
+        'Acierto': '#43aa8b',
+        'Final': '#ffd60a'
+    };
+    
+    // Objeto para rastrear etapas seleccionadas
+    let selectedStages = {};
+    stages.forEach(stage => {
+        selectedStages[stage] = false;
+    });
 
-    // Panel de opciones de etapa seleccionada
-    const stagePanelContainer = document.createElement('div');
-    stagePanelContainer.style.cssText = `
-        width: 100%;
-        margin-top: 1.2rem;
+    // Contenedor de paneles de configuración
+    const configPanelsContainer = document.createElement('div');
+    configPanelsContainer.style.cssText = `
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 520px;
     `;
 
-    // Definir íconos de tipo globales dentro de showWaitingScreen
+    // Definir íconos de tipo
     const typeIcons = { 'Texto': '📝', 'Imagen': '🖼️', 'Audio': '🔊', 'Video': '🎬' };
 
-    // Función para crear el panel de opciones de una etapa
-    function createStagePanel(stage) {
+    // Función para crear el panel de configuración
+    function createConfigPanel(stage) {
         const panel = document.createElement('div');
-        panel.id = `stage-panel-${stage}`;
         panel.style.cssText = `
-            background: #f8f9ff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px #4361ee22;
-            padding: 1.2rem 1.5rem;
-            margin-bottom: 0.5rem;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 0.7rem;
-            animation: fadeIn 0.4s;
-            width: 100%;
-            max-width: 400px;
-            border-left: 8px solid ${
-                stage === 'Inicio' ? '#4361ee' :
-                stage === 'Acierto' ? '#43aa8b' :
-                stage === 'Final' ? '#ffd60a' : '#4361ee'
-            };
-            position: relative;
+            gap: 1.5rem;
         `;
 
-        // Encabezado destacado para el panel
-        const panelHeader = document.createElement('div');
-        panelHeader.textContent = `${stageIcons[stage] || ''} Opciones para ${stage}`;
-        panelHeader.style.cssText = `
-            font-size: 1.25rem;
+        // Encabezado
+        const header = document.createElement('div');
+        header.style.cssText = `
+            font-size: 1.3rem;
             font-weight: bold;
-            color: ${
-                stage === 'Inicio' ? '#4361ee' :
-                stage === 'Acierto' ? '#43aa8b' :
-                stage === 'Final' ? '#ffd60a' : '#4361ee'
-            };
-            background: ${
-                stage === 'Inicio' ? '#e0e7ff' :
-                stage === 'Acierto' ? '#e6fff7' :
-                stage === 'Final' ? '#fffbe6' : '#e0e7ff'
-            };
-            width: 100%;
+            color: ${stageColors[stage]};
             text-align: center;
-            padding: 0.6rem 0;
-            border-radius: 8px 8px 0 0;
-            margin-bottom: 0.7rem;
-            box-shadow: 0 2px 8px #4361ee11;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid ${stageColors[stage]};
         `;
-        panel.appendChild(panelHeader);
+        header.textContent = `${stageIcons[stage]} Configurar ${stage}`;
+        panel.appendChild(header);
 
-        // Botones horizontales de tipo
-        const typeRow = document.createElement('div');
-        typeRow.style.cssText = `
+        // Contenedor de botones de tipos
+        const typeButtonsContainer = document.createElement('div');
+        typeButtonsContainer.style.cssText = `
             display: flex;
-            gap: 1.2rem;
-            flex-wrap: wrap;
+            gap: 0.8rem;
             justify-content: center;
-            width: 100%;
-            margin-bottom: 1rem;
+            flex-wrap: wrap;
         `;
 
-        // Panel donde se muestra el input correspondiente
-        const inputPanelWrapper = document.createElement('div');
-        inputPanelWrapper.id = `input-panel-wrapper-${stage}`;
-        inputPanelWrapper.style.cssText = `
-            width: 100%;
-            margin-top: 0.7rem;
-            align-items: center;
-            display: flex;
-            flex-direction: column;
-        `;
+        // Variable para rastrear el tipo seleccionado
+        let selectedType = 'Texto';
 
-        // Estado de selección
-        let selectedType = null;
-
+        // Crear botones de tipos
+        const typeButtons = {};
         types.forEach(type => {
-            const btn = document.createElement('button');
-            btn.textContent = `${typeIcons[type]} ${type}`;
-            btn.style.cssText = `
-                background: #fff;
-                color: var(--primary);
-                border: 2px solid #e6eefc;
-                border-radius: 8px;
+            const typeBtn = document.createElement('button');
+            typeBtn.textContent = `${typeIcons[type]} ${type}`;
+            typeBtn.style.cssText = `
+                background: ${type === selectedType ? stageColors[stage] : '#ffffff'};
+                color: ${type === selectedType ? 'white' : stageColors[stage]};
+                border: 2px solid ${stageColors[stage]};
+                border-radius: 10px;
                 padding: 0.7rem 1.2rem;
-                font-size: 1rem;
-                font-weight: 500;
+                font-size: 0.95rem;
+                font-weight: 600;
                 cursor: pointer;
-                transition: background 0.2s, color 0.2s, border 0.2s;
-                margin-bottom: 0;
+                transition: all 0.3s;
+                box-shadow: ${type === selectedType ? `0 4px 12px ${stageColors[stage]}40` : 'none'};
             `;
-            btn.addEventListener('click', () => {
-                // Quitar selección de todos los botones
-                Array.from(typeRow.children).forEach(b => {
-                    b.style.background = '#fff';
-                    b.style.color = 'var(--primary)';
-                    b.style.borderColor = '#e6eefc';
-                });
-                btn.style.background = '#e0e7ff';
-                btn.style.color = '#4361ee';
-                btn.style.borderColor = '#4361ee';
 
-                // Inicializar config para esta etapa (sin guardar aún)
-                if (!config[stage]) config[stage] = {};
-
-                // Mostrar el panel correspondiente debajo del botón
-                inputPanelWrapper.innerHTML = '';
-                addInputPanel(stage, type, inputPanelWrapper);
+            typeBtn.addEventListener('click', () => {
                 selectedType = type;
+                // Actualizar estilos de botones
+                types.forEach(t => {
+                    const isSelected = t === selectedType;
+                    typeButtons[t].style.background = isSelected ? stageColors[stage] : '#ffffff';
+                    typeButtons[t].style.color = isSelected ? 'white' : stageColors[stage];
+                    typeButtons[t].style.boxShadow = isSelected ? `0 4px 12px ${stageColors[stage]}40` : 'none';
+                });
+                // Mostrar solo el contenido del tipo seleccionado
+                contentDiv.innerHTML = '';
+                loadTypeContent(stage, selectedType, contentDiv);
             });
-            typeRow.appendChild(btn);
+
+            typeBtn.addEventListener('mouseenter', () => {
+                if (type !== selectedType) {
+                    typeBtn.style.background = stageColors[stage] + '15';
+                }
+            });
+
+            typeBtn.addEventListener('mouseleave', () => {
+                if (type !== selectedType) {
+                    typeBtn.style.background = '#ffffff';
+                }
+            });
+
+            typeButtonsContainer.appendChild(typeBtn);
+            typeButtons[type] = typeBtn;
         });
 
-        panel.appendChild(typeRow);
-        panel.appendChild(inputPanelWrapper);
+        panel.appendChild(typeButtonsContainer);
+
+        // Contenedor para el contenido del tipo seleccionado
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        `;
+
+        // Cargar contenido inicial (Texto)
+        loadTypeContent(stage, selectedType, contentDiv);
+        panel.appendChild(contentDiv);
 
         return panel;
+    }
+
+    // Función para cargar contenido específico de cada tipo
+    function loadTypeContent(stage, type, container) {
+        container.innerHTML = '';
+
+        if (type === 'Texto') {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.maxLength = 20;
+            input.placeholder = 'Escribe aquí (máx. 20 caracteres)';
+            input.style.cssText = `
+                width: 100%;
+                padding: 10px 12px;
+                border-radius: 8px;
+                border: 1.5px solid #e6eefc;
+                font-size: 1rem;
+                color: var(--primary);
+                text-align: center;
+            `;
+            input.value = (config[stage] && config[stage]['TextoValor']) ? config[stage]['TextoValor'] : '';
+            container.appendChild(input);
+
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Guardar texto';
+            saveBtn.style.cssText = `
+                background: ${stageColors[stage]};
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.6rem 1.2rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transition: all 0.3s;
+            `;
+            saveBtn.addEventListener('click', () => {
+                if (!config[stage]) config[stage] = {};
+                config[stage]['TextoValor'] = input.value;
+                config[stage]['Texto'] = true;
+                localStorage.setItem('gameConfig', JSON.stringify(config));
+                saveBtn.textContent = '✅ Guardado';
+                setTimeout(() => { saveBtn.textContent = 'Guardar texto'; }, 1200);
+            });
+            container.appendChild(saveBtn);
+
+        } else if (type === 'Imagen') {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.jpg,.jpeg,.png,image/jpeg,image/png';
+            input.style.cssText = `display: none;`;
+
+            // Contenedor superior con botón y restricciones lado a lado
+            const topContainer = document.createElement('div');
+            topContainer.style.cssText = `
+                display: flex;
+                gap: 1rem;
+                align-items: flex-start;
+            `;
+
+            const examineBtn = document.createElement('button');
+            examineBtn.textContent = '📁 Examinar';
+            examineBtn.style.cssText = `
+                background: linear-gradient(135deg, ${stageColors[stage]} 0%, ${stageColors[stage]}dd 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.6rem 1rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.85rem;
+                transition: all 0.3s;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                white-space: nowrap;
+                flex-shrink: 0;
+            `;
+            examineBtn.addEventListener('click', () => input.click());
+            topContainer.appendChild(examineBtn);
+
+            const restrictionsDiv = document.createElement('div');
+            restrictionsDiv.style.cssText = `
+                background: #f0f0f0;
+                padding: 0.6rem 0.8rem;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                color: #666;
+                text-align: left;
+                flex-grow: 1;
+                border-left: 3px solid ${stageColors[stage]};
+            `;
+            restrictionsDiv.innerHTML = `📸 Formatos: .jpg, .jpeg, .png<br>⚖️ Máximo: 5 MB`;
+            topContainer.appendChild(restrictionsDiv);
+
+            container.appendChild(input);
+            container.appendChild(topContainer);
+
+            // Contenedor de previsualización
+            const previewDiv = document.createElement('div');
+            previewDiv.style.cssText = `
+                display: none;
+                text-align: center;
+                padding: 1rem;
+                background: #f9f9f9;
+                border-radius: 8px;
+                border: 2px dashed ${stageColors[stage]};
+            `;
+            container.appendChild(previewDiv);
+
+            const uploadBtn = document.createElement('button');
+            uploadBtn.textContent = 'Guardar';
+            uploadBtn.style.cssText = `
+                background: linear-gradient(90deg, #43aa8b 60%, ${stageColors[stage]} 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 0.6rem 1.5rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transition: all 0.3s;
+            `;
+            container.appendChild(uploadBtn);
+
+            let selectedFile = null;
+            input.addEventListener('change', () => {
+                const file = input.files[0];
+                selectedFile = file;
+                if (!file) return;
+                const validTypes = ['image/jpeg', 'image/png'];
+                const validExt = /\.(jpg|jpeg|png)$/i;
+                if (!validTypes.includes(file.type) || !validExt.test(file.name)) {
+                    alert('Solo .jpg, .jpeg o .png');
+                    input.value = '';
+                    selectedFile = null;
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Máximo 5 MB');
+                    input.value = '';
+                    selectedFile = null;
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewDiv.innerHTML = `<strong style="color: ${stageColors[stage]};">Vista previa:</strong><br><img src="${e.target.result}" style="max-width: 200px; max-height: 120px; border-radius: 8px; margin-top: 0.8rem;">`;
+                    previewDiv.style.display = 'block';
+                    examineBtn.textContent = '✅ Seleccionado';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            uploadBtn.addEventListener('click', () => {
+                if (!selectedFile) {
+                    alert('Selecciona una imagen primero');
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('image', selectedFile);
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Guardando...';
+                
+                fetchWithRetry(`${SERVER_URL}/upload-image`, { method: 'POST', body: formData })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            uploadBtn.textContent = '✅ Guardado';
+                            if (!config[stage]) config[stage] = {};
+                            config[stage]['ImagenUrl'] = data.url || '';
+                            config[stage]['Imagen'] = true;
+                            localStorage.setItem('gameConfig', JSON.stringify(config));
+                            setTimeout(() => {
+                                uploadBtn.textContent = 'Guardar';
+                                uploadBtn.disabled = false;
+                            }, 1500);
+                        }
+                    })
+                    .catch(err => {
+                        alert('Error al guardar');
+                        uploadBtn.disabled = false;
+                        uploadBtn.textContent = 'Guardar';
+                    });
+            });
+
+        } else if (type === 'Audio') {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.mp3,audio/mp3';
+            input.style.cssText = `display: none;`;
+
+            // Contenedor superior con botón y restricciones lado a lado
+            const topContainer = document.createElement('div');
+            topContainer.style.cssText = `
+                display: flex;
+                gap: 1rem;
+                align-items: flex-start;
+            `;
+
+            const examineBtn = document.createElement('button');
+            examineBtn.textContent = '📁 Examinar';
+            examineBtn.style.cssText = `
+                background: linear-gradient(135deg, ${stageColors[stage]} 0%, ${stageColors[stage]}dd 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.6rem 1rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.85rem;
+                transition: all 0.3s;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                white-space: nowrap;
+                flex-shrink: 0;
+            `;
+            examineBtn.addEventListener('click', () => input.click());
+            topContainer.appendChild(examineBtn);
+
+            const restrictionsDiv = document.createElement('div');
+            restrictionsDiv.style.cssText = `
+                background: #f0f0f0;
+                padding: 0.6rem 0.8rem;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                color: #666;
+                text-align: left;
+                flex-grow: 1;
+                border-left: 3px solid ${stageColors[stage]};
+            `;
+            restrictionsDiv.innerHTML = `🔊 Formato: .mp3<br>⚖️ Máximo: 3 MB`;
+            topContainer.appendChild(restrictionsDiv);
+
+            container.appendChild(input);
+            container.appendChild(topContainer);
+
+            // Contenedor de previsualización
+            const previewDiv = document.createElement('div');
+            previewDiv.style.cssText = `
+                display: none;
+                text-align: center;
+                padding: 1rem;
+                background: #f9f9f9;
+                border-radius: 8px;
+                border: 2px dashed ${stageColors[stage]};
+                font-size: 0.9rem;
+            `;
+            container.appendChild(previewDiv);
+
+            const uploadBtn = document.createElement('button');
+            uploadBtn.textContent = 'Guardar';
+            uploadBtn.style.cssText = `
+                background: linear-gradient(90deg, #43aa8b 60%, ${stageColors[stage]} 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 0.6rem 1.5rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transition: all 0.3s;
+            `;
+            container.appendChild(uploadBtn);
+
+            let selectedFile = null;
+            input.addEventListener('change', () => {
+                const file = input.files[0];
+                selectedFile = file;
+                if (!file) return;
+                const validTypes = ['audio/mp3', 'audio/mpeg'];
+                const validExt = /\.(mp3)$/i;
+                if (!validTypes.includes(file.type) || !validExt.test(file.name)) {
+                    alert('Solo .mp3');
+                    input.value = '';
+                    selectedFile = null;
+                    return;
+                }
+                if (file.size > 3 * 1024 * 1024) {
+                    alert('Máximo 3 MB');
+                    input.value = '';
+                    selectedFile = null;
+                    return;
+                }
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                previewDiv.innerHTML = `<strong style="color: ${stageColors[stage]};">Vista previa:</strong><br>🔊 ${file.name} (${fileSize} MB)`;
+                previewDiv.style.display = 'block';
+                examineBtn.textContent = '✅ Seleccionado';
+            });
+
+            uploadBtn.addEventListener('click', () => {
+                if (!selectedFile) {
+                    alert('Selecciona un audio primero');
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('audio', selectedFile);
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Guardando...';
+                
+                fetchWithRetry(`${SERVER_URL}/upload-audio`, { method: 'POST', body: formData })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            uploadBtn.textContent = '✅ Guardado';
+                            if (!config[stage]) config[stage] = {};
+                            config[stage]['AudioUrl'] = data.url || '';
+                            config[stage]['Audio'] = true;
+                            localStorage.setItem('gameConfig', JSON.stringify(config));
+                            setTimeout(() => {
+                                uploadBtn.textContent = 'Guardar';
+                                uploadBtn.disabled = false;
+                            }, 1500);
+                        }
+                    })
+                    .catch(() => {
+                        alert('Error al guardar');
+                        uploadBtn.disabled = false;
+                        uploadBtn.textContent = 'Guardar';
+                    });
+            });
+
+        } else if (type === 'Video') {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.mp4,video/mp4';
+            input.style.cssText = `display: none;`;
+
+            // Contenedor superior con botón y restricciones lado a lado
+            const topContainer = document.createElement('div');
+            topContainer.style.cssText = `
+                display: flex;
+                gap: 1rem;
+                align-items: flex-start;
+            `;
+
+            const examineBtn = document.createElement('button');
+            examineBtn.textContent = '📁 Examinar';
+            examineBtn.style.cssText = `
+                background: linear-gradient(135deg, ${stageColors[stage]} 0%, ${stageColors[stage]}dd 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.6rem 1rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.85rem;
+                transition: all 0.3s;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                white-space: nowrap;
+                flex-shrink: 0;
+            `;
+            examineBtn.addEventListener('click', () => input.click());
+            topContainer.appendChild(examineBtn);
+
+            const restrictionsDiv = document.createElement('div');
+            restrictionsDiv.style.cssText = `
+                background: #f0f0f0;
+                padding: 0.6rem 0.8rem;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                color: #666;
+                text-align: left;
+                flex-grow: 1;
+                border-left: 3px solid ${stageColors[stage]};
+            `;
+            restrictionsDiv.innerHTML = `🎬 Formato: .mp4<br>⚖️ Máximo: 10 MB`;
+            topContainer.appendChild(restrictionsDiv);
+
+            container.appendChild(input);
+            container.appendChild(topContainer);
+
+            // Contenedor de previsualización
+            const previewDiv = document.createElement('div');
+            previewDiv.style.cssText = `
+                display: none;
+                text-align: center;
+                padding: 1rem;
+                background: #f9f9f9;
+                border-radius: 8px;
+                border: 2px dashed ${stageColors[stage]};
+                font-size: 0.9rem;
+            `;
+            container.appendChild(previewDiv);
+
+            const uploadBtn = document.createElement('button');
+            uploadBtn.textContent = 'Guardar';
+            uploadBtn.style.cssText = `
+                background: linear-gradient(90deg, #43aa8b 60%, ${stageColors[stage]} 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 0.6rem 1.5rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transition: all 0.3s;
+            `;
+            container.appendChild(uploadBtn);
+
+            let selectedFile = null;
+            input.addEventListener('change', () => {
+                const file = input.files[0];
+                selectedFile = file;
+                if (!file) return;
+                const validTypes = ['video/mp4'];
+                const validExt = /\.(mp4)$/i;
+                if (!validTypes.includes(file.type) || !validExt.test(file.name)) {
+                    alert('Solo .mp4');
+                    input.value = '';
+                    selectedFile = null;
+                    return;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Máximo 10 MB');
+                    input.value = '';
+                    selectedFile = null;
+                    return;
+                }
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                previewDiv.innerHTML = `<strong style="color: ${stageColors[stage]};">Vista previa:</strong><br>🎬 ${file.name} (${fileSize} MB)`;
+                previewDiv.style.display = 'block';
+                examineBtn.textContent = '✅ Seleccionado';
+            });
+
+            uploadBtn.addEventListener('click', () => {
+                if (!selectedFile) {
+                    alert('Selecciona un video primero');
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('video', selectedFile);
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Guardando...';
+                
+                fetchWithRetry(`${SERVER_URL}/upload-video`, { method: 'POST', body: formData })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            uploadBtn.textContent = '✅ Guardado';
+                            if (!config[stage]) config[stage] = {};
+                            config[stage]['VideoUrl'] = data.url || '';
+                            config[stage]['Video'] = true;
+                            localStorage.setItem('gameConfig', JSON.stringify(config));
+                            setTimeout(() => {
+                                uploadBtn.textContent = 'Guardar';
+                                uploadBtn.disabled = false;
+                            }, 1500);
+                        }
+                    })
+                    .catch(() => {
+                        alert('Error al guardar');
+                        uploadBtn.disabled = false;
+                        uploadBtn.textContent = 'Guardar';
+                    });
+            });
+        }
     }
 
     // Función para agregar input panel según tipo
@@ -789,47 +1236,110 @@ function showWaitingScreen() {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.jpg,.jpeg,.png,image/jpeg,image/png';
-            input.style.cssText = `margin-top: 0.5rem; align-self: center;`;
-
-            // Cuadro gris con restricciones
-            const restrictionBox = document.createElement('div');
-            restrictionBox.style.cssText = `
-                background: #e6eefc;
-                color: #222;
-                border-radius: 8px;
-                padding: 0.7rem 1rem;
-                margin-left: 0.5rem;
-                font-size: 0.98rem;
-                margin-top: 0.5rem;
-                max-width: 220px;
-                text-align: left;
-                display: inline-block;
-            `;
-            restrictionBox.innerHTML = `
-                <strong>Restricciones:</strong><br>
-                • Solo formatos <b>.jpg</b>, <b>.jpeg</b>, <b>.png</b><br>
-                • Tamaño máximo: 5 MB
-            `;
-
+            input.style.cssText = `display: none;`;
             inputPanel.appendChild(input);
-            inputPanel.appendChild(restrictionBox);
-            inputPanel.appendChild(errorMsg);
 
-            const uploadBtn = document.createElement('button');
-            uploadBtn.textContent = 'Subir imagen (.jpg, .png)';
-            uploadBtn.style.cssText = `
+            // Contenedor para examinar y restricciones
+            const fileControlsContainer = document.createElement('div');
+            fileControlsContainer.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                gap: 0.8rem;
+                width: 100%;
+                align-items: center;
                 margin-top: 0.5rem;
-                background: #4361ee;
+            `;
+
+            // Botón de examinar con diseño mejorado
+            const examineBtn = document.createElement('button');
+            examineBtn.textContent = '📁 Examinar archivo';
+            examineBtn.style.cssText = `
+                background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 0.5rem 1.5rem;
+                border-radius: 12px;
+                padding: 0.8rem 1.5rem;
                 cursor: pointer;
                 font-weight: 600;
                 font-size: 1rem;
-                transition: background 0.3s;
-                align-self: center;
+                transition: all 0.3s;
+                box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                justify-content: center;
+                width: 100%;
+                max-width: 280px;
             `;
+            examineBtn.addEventListener('mouseenter', () => {
+                examineBtn.style.transform = 'translateY(-2px)';
+                examineBtn.style.boxShadow = '0 6px 16px rgba(67, 97, 238, 0.4)';
+            });
+            examineBtn.addEventListener('mouseleave', () => {
+                examineBtn.style.transform = 'translateY(0)';
+                examineBtn.style.boxShadow = '0 4px 12px rgba(67, 97, 238, 0.3)';
+            });
+            examineBtn.addEventListener('click', () => input.click());
+
+            // Restricciones al lado del botón
+            const restrictionBox = document.createElement('div');
+            restrictionBox.style.cssText = `
+                background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+                color: #2c3e50;
+                border-radius: 12px;
+                padding: 0.8rem 1.2rem;
+                font-size: 0.95rem;
+                border-left: 4px solid #4361ee;
+                width: 100%;
+                max-width: 280px;
+            `;
+            restrictionBox.innerHTML = `
+                <strong style="color: #4361ee;">Restricciones:</strong><br>
+                <span style="font-size: 0.9rem;">📸 .jpg, .jpeg, .png</span><br>
+                <span style="font-size: 0.9rem;">⚖️ Máximo: 5 MB</span>
+            `;
+
+            fileControlsContainer.appendChild(examineBtn);
+            fileControlsContainer.appendChild(restrictionBox);
+            inputPanel.appendChild(fileControlsContainer);
+
+            // Preview container
+            const previewContainer = document.createElement('div');
+            previewContainer.id = `preview-${stage}-imagen`;
+            previewContainer.style.cssText = `
+                width: 100%;
+                height: auto;
+                margin-top: 1rem;
+                display: none;
+                text-align: center;
+            `;
+            inputPanel.appendChild(previewContainer);
+
+            inputPanel.appendChild(errorMsg);
+
+            const uploadBtn = document.createElement('button');
+            uploadBtn.textContent = 'Guardar';
+            uploadBtn.style.cssText = `
+                margin-top: 1rem;
+                background: linear-gradient(90deg, #43aa8b 60%, #4361ee 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 0.7rem 2rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 1rem;
+                transition: all 0.3s;
+                box-shadow: 0 4px 12px rgba(67, 152, 139, 0.3);
+            `;
+            uploadBtn.addEventListener('mouseenter', () => {
+                uploadBtn.style.transform = 'translateY(-2px)';
+                uploadBtn.style.boxShadow = '0 6px 16px rgba(67, 152, 139, 0.4)';
+            });
+            uploadBtn.addEventListener('mouseleave', () => {
+                uploadBtn.style.transform = 'translateY(0)';
+                uploadBtn.style.boxShadow = '0 4px 12px rgba(67, 152, 139, 0.3)';
+            });
             inputPanel.appendChild(uploadBtn);
 
             let selectedFile = null;
@@ -852,6 +1362,16 @@ function showWaitingScreen() {
                     selectedFile = null;
                     return;
                 }
+                // Mostrar preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewContainer.innerHTML = `
+                        <img src="${e.target.result}" style="max-width: 200px; max-height: 150px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                    `;
+                    previewContainer.style.display = 'block';
+                    examineBtn.textContent = '✅ Archivo seleccionado';
+                };
+                reader.readAsDataURL(file);
             });
 
             uploadBtn.addEventListener('click', () => {
@@ -864,7 +1384,7 @@ function showWaitingScreen() {
                 const formData = new FormData();
                 formData.append('image', selectedFile);
                 uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Subiendo... (espera)';
+                uploadBtn.textContent = 'Guardando...';
                 
                 fetchWithRetry(`${SERVER_URL}/upload-image`, {
                     method: 'POST',
@@ -873,78 +1393,141 @@ function showWaitingScreen() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        uploadBtn.textContent = '¡Imagen subida!';
-                        uploadBtn.style.background = '#43aa8b';
+                        uploadBtn.textContent = '✅ Guardado';
+                        uploadBtn.style.background = 'linear-gradient(90deg, #43aa8b 60%, #2a9d6f 100%)';
                         if (!config[stage]) config[stage] = {};
                         config[stage]['ImagenUrl'] = data.url || '';
                         config[stage]['Imagen'] = true;
                         localStorage.setItem('gameConfig', JSON.stringify(config));
                         
                         setTimeout(() => {
-                            uploadBtn.textContent = 'Subir imagen (.jpg, .png)';
-                            uploadBtn.style.background = '#4361ee';
+                            uploadBtn.textContent = 'Guardar';
+                            uploadBtn.style.background = 'linear-gradient(90deg, #43aa8b 60%, #4361ee 100%)';
                             uploadBtn.disabled = false;
                         }, 1500);
                     } else {
-                        errorMsg.textContent = 'Error al subir la imagen: ' + (data.error || 'Error desconocido');
+                        errorMsg.textContent = 'Error al guardar: ' + (data.error || 'Error desconocido');
                         errorMsg.style.display = 'block';
                         uploadBtn.disabled = false;
-                        uploadBtn.textContent = 'Subir imagen (.jpg, .png)';
+                        uploadBtn.textContent = 'Guardar';
                     }
                 })
                 .catch(err => {
-                    console.error('Error al subir imagen:', err);
-                    errorMsg.textContent = 'No se pudo conectar al servidor. Verifica tu conexión e intenta de nuevo.';
+                    console.error('Error:', err);
+                    errorMsg.textContent = 'No se pudo conectar. Verifica tu conexión.';
                     errorMsg.style.display = 'block';
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = 'Subir imagen (.jpg, .png)';
+                    uploadBtn.textContent = 'Guardar';
                 });
             });
         } else if (type === 'Audio') {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.mp3,audio/mp3';
-            input.style.cssText = `margin-top: 0.5rem; align-self: center;`;
-
-            // Cuadro gris con restricciones
-            const restrictionBox = document.createElement('div');
-            restrictionBox.style.cssText = `
-                background: #e6eefc;
-                color: #222;
-                border-radius: 8px;
-                padding: 0.7rem 1rem;
-                margin-left: 0.5rem;
-                font-size: 0.98rem;
-                margin-top: 0.5rem;
-                max-width: 220px;
-                text-align: left;
-                display: inline-block;
-            `;
-            restrictionBox.innerHTML = `
-                <strong>Restricciones:</strong><br>
-                • Solo formato <b>.mp3</b><br>
-                • Tamaño máximo: 3 MB
-            `;
-
+            input.style.cssText = `display: none;`;
             inputPanel.appendChild(input);
-            inputPanel.appendChild(restrictionBox);
-            inputPanel.appendChild(errorMsg);
 
-            const uploadBtn = document.createElement('button');
-            uploadBtn.textContent = 'Subir audio (.mp3)';
-            uploadBtn.style.cssText = `
+            // Contenedor para examinar y restricciones
+            const fileControlsContainer = document.createElement('div');
+            fileControlsContainer.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                gap: 0.8rem;
+                width: 100%;
+                align-items: center;
                 margin-top: 0.5rem;
-                background: #4361ee;
+            `;
+
+            // Botón de examinar con diseño mejorado
+            const examineBtn = document.createElement('button');
+            examineBtn.textContent = '📁 Examinar archivo';
+            examineBtn.style.cssText = `
+                background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 0.5rem 1.5rem;
+                border-radius: 12px;
+                padding: 0.8rem 1.5rem;
                 cursor: pointer;
                 font-weight: 600;
                 font-size: 1rem;
-                transition: background 0.3s;
-                align-self: center;
+                transition: all 0.3s;
+                box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                justify-content: center;
+                width: 100%;
+                max-width: 280px;
             `;
+            examineBtn.addEventListener('mouseenter', () => {
+                examineBtn.style.transform = 'translateY(-2px)';
+                examineBtn.style.boxShadow = '0 6px 16px rgba(67, 97, 238, 0.4)';
+            });
+            examineBtn.addEventListener('mouseleave', () => {
+                examineBtn.style.transform = 'translateY(0)';
+                examineBtn.style.boxShadow = '0 4px 12px rgba(67, 97, 238, 0.3)';
+            });
+            examineBtn.addEventListener('click', () => input.click());
+
+            // Restricciones al lado del botón
+            const restrictionBox = document.createElement('div');
+            restrictionBox.style.cssText = `
+                background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+                color: #2c3e50;
+                border-radius: 12px;
+                padding: 0.8rem 1.2rem;
+                font-size: 0.95rem;
+                border-left: 4px solid #4361ee;
+                width: 100%;
+                max-width: 280px;
+            `;
+            restrictionBox.innerHTML = `
+                <strong style="color: #4361ee;">Restricciones:</strong><br>
+                <span style="font-size: 0.9rem;">🔊 Solo .mp3</span><br>
+                <span style="font-size: 0.9rem;">⚖️ Máximo: 3 MB</span>
+            `;
+
+            fileControlsContainer.appendChild(examineBtn);
+            fileControlsContainer.appendChild(restrictionBox);
+            inputPanel.appendChild(fileControlsContainer);
+
+            // Preview container
+            const previewContainer = document.createElement('div');
+            previewContainer.id = `preview-${stage}-audio`;
+            previewContainer.style.cssText = `
+                width: 100%;
+                height: auto;
+                margin-top: 1rem;
+                display: none;
+                text-align: center;
+            `;
+            inputPanel.appendChild(previewContainer);
+
+            inputPanel.appendChild(errorMsg);
+
+            const uploadBtn = document.createElement('button');
+            uploadBtn.textContent = 'Guardar';
+            uploadBtn.style.cssText = `
+                margin-top: 1rem;
+                background: linear-gradient(90deg, #43aa8b 60%, #4361ee 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 0.7rem 2rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 1rem;
+                transition: all 0.3s;
+                box-shadow: 0 4px 12px rgba(67, 152, 139, 0.3);
+            `;
+            uploadBtn.addEventListener('mouseenter', () => {
+                uploadBtn.style.transform = 'translateY(-2px)';
+                uploadBtn.style.boxShadow = '0 6px 16px rgba(67, 152, 139, 0.4)';
+            });
+            uploadBtn.addEventListener('mouseleave', () => {
+                uploadBtn.style.transform = 'translateY(0)';
+                uploadBtn.style.boxShadow = '0 4px 12px rgba(67, 152, 139, 0.3)';
+            });
             inputPanel.appendChild(uploadBtn);
 
             let selectedFile = null;
@@ -967,6 +1550,17 @@ function showWaitingScreen() {
                     selectedFile = null;
                     return;
                 }
+                // Mostrar preview
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                previewContainer.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%); border-radius: 12px; padding: 1rem; border-left: 4px solid #4361ee;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔊</div>
+                        <div style="font-weight: bold; color: #2c3e50;">${file.name}</div>
+                        <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">${fileSize} MB</div>
+                    </div>
+                `;
+                previewContainer.style.display = 'block';
+                examineBtn.textContent = '✅ Archivo seleccionado';
             });
 
             uploadBtn.addEventListener('click', () => {
@@ -979,7 +1573,7 @@ function showWaitingScreen() {
                 const formData = new FormData();
                 formData.append('audio', selectedFile);
                 uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Subiendo... (espera)';
+                uploadBtn.textContent = 'Guardando...';
                 
                 fetchWithRetry(`${SERVER_URL}/upload-audio`, {
                     method: 'POST',
@@ -988,78 +1582,141 @@ function showWaitingScreen() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        uploadBtn.textContent = '¡Audio subido!';
-                        uploadBtn.style.background = '#43aa8b';
+                        uploadBtn.textContent = '✅ Guardado';
+                        uploadBtn.style.background = 'linear-gradient(90deg, #43aa8b 60%, #2a9d6f 100%)';
                         if (!config[stage]) config[stage] = {};
                         config[stage]['AudioUrl'] = data.url || '';
                         config[stage]['Audio'] = true;
                         localStorage.setItem('gameConfig', JSON.stringify(config));
                         
                         setTimeout(() => {
-                            uploadBtn.textContent = 'Subir audio (.mp3)';
-                            uploadBtn.style.background = '#4361ee';
+                            uploadBtn.textContent = 'Guardar';
+                            uploadBtn.style.background = 'linear-gradient(90deg, #43aa8b 60%, #4361ee 100%)';
                             uploadBtn.disabled = false;
                         }, 1500);
                     } else {
-                        errorMsg.textContent = 'Error al subir el audio: ' + (data.error || 'Error desconocido');
+                        errorMsg.textContent = 'Error al guardar: ' + (data.error || 'Error desconocido');
                         errorMsg.style.display = 'block';
                         uploadBtn.disabled = false;
-                        uploadBtn.textContent = 'Subir audio (.mp3)';
+                        uploadBtn.textContent = 'Guardar';
                     }
                 })
                 .catch(err => {
-                    console.error('Error al subir audio:', err);
-                    errorMsg.textContent = 'No se pudo conectar al servidor. Verifica tu conexión e intenta de nuevo.';
+                    console.error('Error:', err);
+                    errorMsg.textContent = 'No se pudo conectar. Verifica tu conexión.';
                     errorMsg.style.display = 'block';
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = 'Subir audio (.mp3)';
+                    uploadBtn.textContent = 'Guardar';
                 });
             });
         } else if (type === 'Video') {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.mp4,video/mp4';
-            input.style.cssText = `margin-top: 0.5rem; align-self: center;`;
-
-            // Cuadro gris con restricciones
-            const restrictionBox = document.createElement('div');
-            restrictionBox.style.cssText = `
-                background: #e6eefc;
-                color: #222;
-                border-radius: 8px;
-                padding: 0.7rem 1rem;
-                margin-left: 0.5rem;
-                font-size: 0.98rem;
-                margin-top: 0.5rem;
-                max-width: 220px;
-                text-align: left;
-                display: inline-block;
-            `;
-            restrictionBox.innerHTML = `
-                <strong>Restricciones:</strong><br>
-                • Solo formato <b>.mp4</b><br>
-                • Tamaño máximo: 10 MB
-            `;
-
+            input.style.cssText = `display: none;`;
             inputPanel.appendChild(input);
-            inputPanel.appendChild(restrictionBox);
-            inputPanel.appendChild(errorMsg);
 
-            const uploadBtn = document.createElement('button');
-            uploadBtn.textContent = 'Subir video (.mp4)';
-            uploadBtn.style.cssText = `
+            // Contenedor para examinar y restricciones
+            const fileControlsContainer = document.createElement('div');
+            fileControlsContainer.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                gap: 0.8rem;
+                width: 100%;
+                align-items: center;
                 margin-top: 0.5rem;
-                background: #4361ee;
+            `;
+
+            // Botón de examinar con diseño mejorado
+            const examineBtn = document.createElement('button');
+            examineBtn.textContent = '📁 Examinar archivo';
+            examineBtn.style.cssText = `
+                background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
                 color: white;
                 border: none;
-                border-radius: 8px;
-                padding: 0.5rem 1.5rem;
+                border-radius: 12px;
+                padding: 0.8rem 1.5rem;
                 cursor: pointer;
                 font-weight: 600;
                 font-size: 1rem;
-                transition: background 0.3s;
-                align-self: center;
+                transition: all 0.3s;
+                box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                justify-content: center;
+                width: 100%;
+                max-width: 280px;
             `;
+            examineBtn.addEventListener('mouseenter', () => {
+                examineBtn.style.transform = 'translateY(-2px)';
+                examineBtn.style.boxShadow = '0 6px 16px rgba(67, 97, 238, 0.4)';
+            });
+            examineBtn.addEventListener('mouseleave', () => {
+                examineBtn.style.transform = 'translateY(0)';
+                examineBtn.style.boxShadow = '0 4px 12px rgba(67, 97, 238, 0.3)';
+            });
+            examineBtn.addEventListener('click', () => input.click());
+
+            // Restricciones al lado del botón
+            const restrictionBox = document.createElement('div');
+            restrictionBox.style.cssText = `
+                background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
+                color: #2c3e50;
+                border-radius: 12px;
+                padding: 0.8rem 1.2rem;
+                font-size: 0.95rem;
+                border-left: 4px solid #4361ee;
+                width: 100%;
+                max-width: 280px;
+            `;
+            restrictionBox.innerHTML = `
+                <strong style="color: #4361ee;">Restricciones:</strong><br>
+                <span style="font-size: 0.9rem;">🎬 Solo .mp4</span><br>
+                <span style="font-size: 0.9rem;">⚖️ Máximo: 10 MB</span>
+            `;
+
+            fileControlsContainer.appendChild(examineBtn);
+            fileControlsContainer.appendChild(restrictionBox);
+            inputPanel.appendChild(fileControlsContainer);
+
+            // Preview container
+            const previewContainer = document.createElement('div');
+            previewContainer.id = `preview-${stage}-video`;
+            previewContainer.style.cssText = `
+                width: 100%;
+                height: auto;
+                margin-top: 1rem;
+                display: none;
+                text-align: center;
+            `;
+            inputPanel.appendChild(previewContainer);
+
+            inputPanel.appendChild(errorMsg);
+
+            const uploadBtn = document.createElement('button');
+            uploadBtn.textContent = 'Guardar';
+            uploadBtn.style.cssText = `
+                margin-top: 1rem;
+                background: linear-gradient(90deg, #43aa8b 60%, #4361ee 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 0.7rem 2rem;
+                cursor: pointer;
+                font-weight: 600;
+                font-size: 1rem;
+                transition: all 0.3s;
+                box-shadow: 0 4px 12px rgba(67, 152, 139, 0.3);
+            `;
+            uploadBtn.addEventListener('mouseenter', () => {
+                uploadBtn.style.transform = 'translateY(-2px)';
+                uploadBtn.style.boxShadow = '0 6px 16px rgba(67, 152, 139, 0.4)';
+            });
+            uploadBtn.addEventListener('mouseleave', () => {
+                uploadBtn.style.transform = 'translateY(0)';
+                uploadBtn.style.boxShadow = '0 4px 12px rgba(67, 152, 139, 0.3)';
+            });
             inputPanel.appendChild(uploadBtn);
 
             let selectedFile = null;
@@ -1082,6 +1739,17 @@ function showWaitingScreen() {
                     selectedFile = null;
                     return;
                 }
+                // Mostrar preview
+                const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                previewContainer.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%); border-radius: 12px; padding: 1rem; border-left: 4px solid #4361ee;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎬</div>
+                        <div style="font-weight: bold; color: #2c3e50;">${file.name}</div>
+                        <div style="font-size: 0.9rem; color: #666; margin-top: 0.3rem;">${fileSize} MB</div>
+                    </div>
+                `;
+                previewContainer.style.display = 'block';
+                examineBtn.textContent = '✅ Archivo seleccionado';
             });
 
             uploadBtn.addEventListener('click', () => {
@@ -1094,7 +1762,7 @@ function showWaitingScreen() {
                 const formData = new FormData();
                 formData.append('video', selectedFile);
                 uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Subiendo... (espera)';
+                uploadBtn.textContent = 'Guardando...';
                 
                 fetchWithRetry(`${SERVER_URL}/upload-video`, {
                     method: 'POST',
@@ -1103,85 +1771,213 @@ function showWaitingScreen() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        uploadBtn.textContent = '¡Video subido!';
-                        uploadBtn.style.background = '#43aa8b';
+                        uploadBtn.textContent = '✅ Guardado';
+                        uploadBtn.style.background = 'linear-gradient(90deg, #43aa8b 60%, #2a9d6f 100%)';
                         if (!config[stage]) config[stage] = {};
                         config[stage]['VideoUrl'] = data.url || '';
                         config[stage]['Video'] = true;
                         localStorage.setItem('gameConfig', JSON.stringify(config));
                         
                         setTimeout(() => {
-                            uploadBtn.textContent = 'Subir video (.mp4)';
-                            uploadBtn.style.background = '#4361ee';
+                            uploadBtn.textContent = 'Guardar';
+                            uploadBtn.style.background = 'linear-gradient(90deg, #43aa8b 60%, #4361ee 100%)';
                             uploadBtn.disabled = false;
                         }, 1500);
                     } else {
-                        errorMsg.textContent = 'Error al subir el video: ' + (data.error || 'Error desconocido');
+                        errorMsg.textContent = 'Error al guardar: ' + (data.error || 'Error desconocido');
                         errorMsg.style.display = 'block';
                         uploadBtn.disabled = false;
-                        uploadBtn.textContent = 'Subir video (.mp4)';
+                        uploadBtn.textContent = 'Guardar';
                     }
                 })
                 .catch(err => {
-                    console.error('Error al subir video:', err);
-                    errorMsg.textContent = 'No se pudo conectar al servidor. Verifica tu conexión e intenta de nuevo.';
+                    console.error('Error:', err);
+                    errorMsg.textContent = 'No se pudo conectar. Verifica tu conexión.';
                     errorMsg.style.display = 'block';
                     uploadBtn.disabled = false;
-                    uploadBtn.textContent = 'Subir video (.mp4)';
+                    uploadBtn.textContent = 'Guardar';
                 });
             });
         }
-
-        wrapper.appendChild(inputPanel);
     }
 
-    // Crear los botones de etapa
+    // Crear checkboxes para seleccionar múltiples etapas
     stages.forEach(stage => {
-        const btn = document.createElement('button');
-        btn.textContent = `${stageIcons[stage]} ${stage}`;
-        btn.style.cssText = `
-            background: #f8f9ff;
-            color: var(--primary);
-            border: 2px solid var(--primary);
+        const checkboxWrapper = document.createElement('label');
+        checkboxWrapper.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.2rem;
+            background: #ffffff;
+            border: 2.5px solid ${stageColors[stage]};
             border-radius: 12px;
-            padding: 0.7rem 1.5rem;
-            font-size: 1.1rem;
-            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s, border 0.2s;
-            width: 120px;
-            text-align: center;
+            transition: all 0.3s;
+            user-select: none;
+            font-weight: 600;
+            color: ${stageColors[stage]};
+            font-size: 1rem;
         `;
-        if (stage === selectedStage) {
-            btn.style.background = '#4361ee';
-            btn.style.color = 'white';
-            btn.style.borderColor = '#4361ee';
-        }
-        btn.addEventListener('click', () => {
-            selectedStage = stage;
-            // Actualiza estilos de los botones
-            Array.from(stageButtonsContainer.children).forEach(b => {
-                b.style.background = '#f8f9ff';
-                b.style.color = 'var(--primary)';
-                b.style.borderColor = 'var(--primary)';
-            });
-            btn.style.background = '#4361ee';
-            btn.style.color = 'white';
-            btn.style.borderColor = '#4361ee';
-            // Muestra el panel correspondiente
-            showSelectedStagePanel();
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.style.cssText = `
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: ${stageColors[stage]};
+        `;
+
+        const label = document.createElement('span');
+        label.textContent = `${stageIcons[stage]} ${stage}`;
+
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+
+        checkbox.addEventListener('change', () => {
+            selectedStages[stage] = checkbox.checked;
+            checkboxWrapper.style.background = checkbox.checked ? stageColors[stage] + '20' : '#ffffff';
+            checkboxWrapper.style.boxShadow = checkbox.checked ? `0 4px 12px ${stageColors[stage]}40` : 'none';
+            updateUI();
         });
-        stageButtonsContainer.appendChild(btn);
+
+        checkboxWrapper.addEventListener('mouseenter', () => {
+            checkboxWrapper.style.transform = 'translateY(-2px)';
+        });
+        checkboxWrapper.addEventListener('mouseleave', () => {
+            checkboxWrapper.style.transform = 'translateY(0)';
+        });
+
+        stageCheckboxesContainer.appendChild(checkboxWrapper);
     });
 
-    // Mostrar el panel de la etapa seleccionada
-    function showSelectedStagePanel() {
-        stagePanelContainer.innerHTML = '';
-        stagePanelContainer.appendChild(createStagePanel(selectedStage));
+    // Variable para rastrear la etapa actualmente visible
+    let currentVisibleStage = null;
+
+    // Contenedor para botones-etiquetas de navegación (dentro del panel)
+    const stageLabelButtonsContainer = document.createElement('div');
+    stageLabelButtonsContainer.style.cssText = `
+        display: flex;
+        gap: 0.6rem;
+        position: absolute;
+        top: 1.2rem;
+        left: 1.2rem;
+    `;
+
+    // Crear botones-etiquetas (I, A, F)
+    const labelButtons = {};
+    stages.forEach(stage => {
+        const labelBtn = document.createElement('button');
+        labelBtn.textContent = stageLetters[stage];
+        labelBtn.style.cssText = `
+            background: ${stageColors[stage]};
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            display: none;
+        `;
+        labelBtn.addEventListener('click', () => {
+            currentVisibleStage = stage;
+            updateUI();
+        });
+        labelBtn.addEventListener('mouseenter', () => {
+            labelBtn.style.transform = 'scale(1.1)';
+            labelBtn.style.boxShadow = `0 4px 12px ${stageColors[stage]}60`;
+        });
+        labelBtn.addEventListener('mouseleave', () => {
+            labelBtn.style.transform = 'scale(1)';
+            labelBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        });
+        stageLabelButtonsContainer.appendChild(labelBtn);
+        labelButtons[stage] = labelBtn;
+    });
+
+    // Panel único de configuración
+    const configPanel = document.createElement('div');
+    configPanel.style.cssText = `
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        width: 520px;
+        max-width: 100%;
+        box-shadow: 0 4px 16px rgba(67, 97, 238, 0.2);
+        animation: fadeIn 0.4s;
+        position: relative;
+        min-height: 300px;
+        padding-top: 4rem;
+        margin-left: 0;
+    `;
+    configPanel.appendChild(stageLabelButtonsContainer);
+
+    // Función para actualizar la UI
+    function updateUI() {
+        // Actualizar visibilidad de botones-etiquetas
+        let hasSelectedStages = false;
+        stages.forEach(stage => {
+            const shouldShow = selectedStages[stage];
+            labelButtons[stage].style.display = shouldShow ? 'block' : 'none';
+            if (shouldShow) hasSelectedStages = true;
+        });
+
+        // Si no hay etapas seleccionadas, limpiar panel
+        if (!hasSelectedStages) {
+            configPanel.innerHTML = '<p style="text-align: center; color: #999;">Selecciona una etapa para comenzar</p>';
+            currentVisibleStage = null;
+            configPanelsContainer.innerHTML = '';
+            return;
+        }
+
+        // Si la etapa actual visible ya no está seleccionada, cambiar a la primera disponible
+        if (!selectedStages[currentVisibleStage]) {
+            currentVisibleStage = stages.find(s => selectedStages[s]);
+        }
+
+        // Si aún no hay etapa visible, asignar la primera disponible
+        if (!currentVisibleStage) {
+            currentVisibleStage = stages.find(s => selectedStages[s]);
+        }
+
+        // Actualizar panel con la etapa actual
+        configPanel.innerHTML = '';
+        
+        // Recrear botones-etiquetas
+        stageLabelButtonsContainer.innerHTML = '';
+        stages.forEach(stage => {
+            if (selectedStages[stage]) {
+                labelButtons[stage].style.display = 'block';
+                stageLabelButtonsContainer.appendChild(labelButtons[stage]);
+            }
+        });
+        
+        configPanel.appendChild(stageLabelButtonsContainer);
+        configPanel.appendChild(createConfigPanel(currentVisibleStage));
+
+        // Mostrar el panel
+        configPanelsContainer.innerHTML = '';
+        configPanelsContainer.appendChild(configPanel);
+
+        // Actualizar estilos de botones-etiquetas
+        stages.forEach(stage => {
+            if (stage === currentVisibleStage) {
+                labelButtons[stage].style.opacity = '1';
+                labelButtons[stage].style.boxShadow = `0 4px 12px ${stageColors[stage]}60`;
+            } else if (selectedStages[stage]) {
+                labelButtons[stage].style.opacity = '0.6';
+                labelButtons[stage].style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+            }
+        });
     }
 
-    // Inicialmente mostrar el panel de la primera etapa
-    showSelectedStagePanel();
+    // Inicializar UI (sin etapas seleccionadas inicialmente)
+    updateUI();
 
     // Botón para guardar toda la configuración
     const saveButton = document.createElement('button');
@@ -1207,81 +2003,19 @@ function showWaitingScreen() {
     saveButton.addEventListener('mouseleave', () => {
         saveButton.style.transform = 'scale(1)';
     });
-    // Referencia temporal al botón de inicio
+    // Referencia temporal al botón de inicio - YA NO SE USA
     let startButtonRef = null;
     
     saveButton.addEventListener('click', () => {
         localStorage.setItem('gameConfig', JSON.stringify(config));
         saveButton.textContent = '¡Guardado!';
         
-        // Habilitar botón de inicio cuando se guarde
-        if (startButtonRef && startButtonRef.disabled) {
-            startButtonRef.disabled = false;
-            startButtonRef.style.opacity = '1';
-            startButtonRef.style.cursor = 'pointer';
-        }
-        
-        setTimeout(() => { saveButton.textContent = '💾 Guardar Configuración'; }, 1200);
-    });
-
-    // Botón para comenzar juego - deshabilitado hasta guardar configuración
-    const startButton = document.createElement('button');
-    startButton.textContent = 'Comenzar juego';
-    startButton.disabled = true;
-    startButton.style.cssText = `
-        background: linear-gradient(90deg, var(--primary) 60%, var(--success) 100%);
-        color: white;
-        border: none;
-        padding: 1rem 2.5rem;
-        border-radius: 18px;
-        font-size: 1.2rem;
-        font-weight: 700;
-        cursor: not-allowed;
-        box-shadow: 0 8px 24px rgba(67, 97, 238, 0.25);
-        transition: transform 0.3s, background 0.3s, opacity 0.3s, cursor 0.3s;
-        animation: bounceBtn 1.2s infinite alternate;
-        margin-top: 1rem;
-        display: block;
-        align-self: center;
-        opacity: 0.5;
-    `;
-    
-    // Guardar referencia para habilitar desde saveButton
-    startButtonRef = startButton;
-    
-    startButton.addEventListener('mouseenter', () => {
-        if (!startButton.disabled) {
-            startButton.style.background = 'linear-gradient(90deg, var(--success) 60%, var(--primary) 100%)';
-            startButton.style.transform = 'translateY(-5px)';
-        }
-    });
-    startButton.addEventListener('mouseleave', () => {
-        if (!startButton.disabled) {
-            startButton.style.background = 'linear-gradient(90deg, var(--primary) 60%, var(--success) 100%)';
-            startButton.style.transform = 'translateY(0)';
-        }
-    });
-    startButton.addEventListener('click', () => {
-        // Solo permitir si está habilitado
-        if (startButton.disabled) return;
-        
-        waitingScreen.remove();
-        gameScreen.classList.remove('hidden');
-        let config = {};
-        try {
-            config = JSON.parse(localStorage.getItem('gameConfig') || '{}');
-        } catch (e) {}
-        if (
-            config['Inicio'] &&
-            (config['Inicio']['Texto'] ||
-             config['Inicio']['Imagen'] ||
-             config['Inicio']['Audio'] ||
-             config['Inicio']['Video'])
-        ) {
-            showInstructionsModal();
-        } else {
-            displayAROperation();
-        }
+        setTimeout(() => {
+            saveButton.textContent = '💾 Guardar Configuración';
+            // Mostrar pantalla de resumen después de guardar
+            waitingScreen.remove();
+            showConfigurationSummary(config);
+        }, 1200);
     });
 
     // Botón para volver
@@ -1318,10 +2052,9 @@ function showWaitingScreen() {
     // Ensamblar la pantalla
     contentContainer.appendChild(title);
     contentContainer.appendChild(subtitle);
-    contentContainer.appendChild(stageButtonsContainer);
-    contentContainer.appendChild(stagePanelContainer);
+    contentContainer.appendChild(stageCheckboxesContainer);
+    contentContainer.appendChild(configPanelsContainer);
     contentContainer.appendChild(saveButton);
-    contentContainer.appendChild(startButton);
     contentContainer.appendChild(backButton);
     waitingScreen.appendChild(contentContainer);
 
@@ -1330,15 +2063,341 @@ function showWaitingScreen() {
     appContainer.appendChild(waitingScreen);
 }
 
+// Nueva función: Mostrar resumen de configuración
+function showConfigurationSummary(config) {
+    const summaryScreen = document.createElement('div');
+    summaryScreen.style.cssText = `
+        background: white;
+        padding: 2.5rem 2rem;
+        width: 100%;
+        max-width: 600px;
+        min-height: 100%;
+        animation: fadeIn 0.5s ease-out;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    `;
+
+    // Contenedor principal
+    const contentContainer = document.createElement('div');
+    contentContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        text-align: center;
+        gap: 1.5rem;
+        width: 100%;
+    `;
+
+    // Título
+    const title = document.createElement('h2');
+    title.textContent = '📋 Resumen de Configuración';
+    title.style.cssText = `
+        color: var(--secondary);
+        font-size: 2rem;
+        margin: 0 auto;
+        text-shadow: 0 2px 8px #e0e7ff;
+        animation: bounceIn 0.8s ease-out;
+        text-align: center;
+        width: 100%;
+    `;
+
+    // Subtítulo
+    const subtitle = document.createElement('h3');
+    subtitle.textContent = 'Aquí está todo lo que configuraste';
+    subtitle.style.cssText = `
+        color: var(--primary);
+        font-size: 1.1rem;
+        margin: 0;
+        font-weight: 500;
+        animation: fadeIn 0.8s ease-out 0.2s both;
+        text-align: center;
+        width: 100%;
+    `;
+
+    // Contenedor de tarjetas de configuración
+    const cardsContainer = document.createElement('div');
+    cardsContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        width: 100%;
+        max-width: 500px;
+    `;
+
+    // Función para crear una tarjeta de etapa
+    function createStageCard(stageName, stageIcon) {
+        const card = document.createElement('div');
+        card.style.cssText = `
+            background: linear-gradient(135deg, #f8f9ff 0%, #ede9fe 100%);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border-left: 6px solid;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+            animation: fadeIn 0.6s ease-out;
+        `;
+
+        // Establecer color del borde según etapa
+        if (stageName === 'Inicio') card.style.borderLeftColor = '#4361ee';
+        else if (stageName === 'Acierto') card.style.borderLeftColor = '#43aa8b';
+        else if (stageName === 'Final') card.style.borderLeftColor = '#ffd60a';
+
+        // Encabezado de la tarjeta
+        const cardHeader = document.createElement('div');
+        cardHeader.style.cssText = `
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+        `;
+        cardHeader.innerHTML = `${stageIcon} ${stageName}`;
+
+        // Contenedor de contenidos
+        const contentsList = document.createElement('div');
+        contentsList.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            text-align: left;
+        `;
+
+        const stageConfig = config[stageName];
+        let hasContent = false;
+
+        // Verificar y mostrar texto
+        if (stageConfig && stageConfig['Texto'] && stageConfig['TextoValor']) {
+            const textDiv = document.createElement('div');
+            textDiv.style.cssText = `
+                background: white;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            `;
+            textDiv.innerHTML = `<span style="font-size: 1.2rem;">📝</span> <strong>Texto:</strong> <span style="color: #666;">"${stageConfig['TextoValor']}"</span>`;
+            contentsList.appendChild(textDiv);
+            hasContent = true;
+        }
+
+        // Verificar y mostrar imagen
+        if (stageConfig && stageConfig['Imagen'] && stageConfig['ImagenUrl']) {
+            const imageDiv = document.createElement('div');
+            imageDiv.style.cssText = `
+                background: white;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            `;
+            imageDiv.innerHTML = `<span style="font-size: 1.2rem;">🖼️</span> <strong>Imagen:</strong> <span style="color: #666;">Configurada ✓</span>`;
+            contentsList.appendChild(imageDiv);
+            hasContent = true;
+        }
+
+        // Verificar y mostrar audio
+        if (stageConfig && stageConfig['Audio'] && stageConfig['AudioUrl']) {
+            const audioDiv = document.createElement('div');
+            audioDiv.style.cssText = `
+                background: white;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            `;
+            audioDiv.innerHTML = `<span style="font-size: 1.2rem;">🔊</span> <strong>Audio:</strong> <span style="color: #666;">Configurado ✓</span>`;
+            contentsList.appendChild(audioDiv);
+            hasContent = true;
+        }
+
+        // Verificar y mostrar video
+        if (stageConfig && stageConfig['Video'] && stageConfig['VideoUrl']) {
+            const videoDiv = document.createElement('div');
+            videoDiv.style.cssText = `
+                background: white;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            `;
+            videoDiv.innerHTML = `<span style="font-size: 1.2rem;">🎬</span> <strong>Video:</strong> <span style="color: #666;">Configurado ✓</span>`;
+            contentsList.appendChild(videoDiv);
+            hasContent = true;
+        }
+
+        // Si no hay contenido, mostrar mensaje
+        if (!hasContent) {
+            const noContentDiv = document.createElement('div');
+            noContentDiv.style.cssText = `
+                background: #fff;
+                padding: 0.8rem 1rem;
+                border-radius: 8px;
+                color: #999;
+                text-align: center;
+                font-style: italic;
+            `;
+            noContentDiv.textContent = 'Sin contenido configurado';
+            contentsList.appendChild(noContentDiv);
+        }
+
+        card.appendChild(cardHeader);
+        card.appendChild(contentsList);
+        return card;
+    }
+
+    // Agregar tarjetas para cada etapa
+    cardsContainer.appendChild(createStageCard('Inicio', '🚀'));
+    cardsContainer.appendChild(createStageCard('Acierto', '✅'));
+    cardsContainer.appendChild(createStageCard('Final', '🏁'));
+
+    // Botón para comenzar el juego
+    const startGameBtn = document.createElement('button');
+    startGameBtn.textContent = '▶️ Comenzar juego';
+    startGameBtn.style.cssText = `
+        background: linear-gradient(90deg, #4361ee 60%, #43aa8b 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 18px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(67, 97, 238, 0.3);
+        transition: transform 0.3s, background 0.3s;
+        margin-top: 1.5rem;
+        display: block;
+        align-self: center;
+    `;
+    startGameBtn.addEventListener('mouseenter', () => {
+        startGameBtn.style.transform = 'scale(1.05)';
+        startGameBtn.style.background = 'linear-gradient(90deg, #43aa8b 60%, #4361ee 100%)';
+    });
+    startGameBtn.addEventListener('mouseleave', () => {
+        startGameBtn.style.transform = 'scale(1)';
+        startGameBtn.style.background = 'linear-gradient(90deg, #4361ee 60%, #43aa8b 100%)';
+    });
+    startGameBtn.addEventListener('click', () => {
+        summaryScreen.remove();
+        gameScreen.classList.remove('hidden');
+        let configData = {};
+        try {
+            configData = JSON.parse(localStorage.getItem('gameConfig') || '{}');
+        } catch (e) {}
+        if (
+            configData['Inicio'] &&
+            (configData['Inicio']['Texto'] ||
+             configData['Inicio']['Imagen'] ||
+             configData['Inicio']['Audio'] ||
+             configData['Inicio']['Video'])
+        ) {
+            showInstructionsModal();
+        } else {
+            displayAROperation();
+        }
+    });
+
+    // Botón para volver a la configuración de RA
+    const editButton = document.createElement('button');
+    editButton.textContent = '← Volver';
+    editButton.style.cssText = `
+        background: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+        padding: 0.8rem 2rem;
+        border-radius: 18px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 0.5rem;
+        display: block;
+        align-self: center;
+    `;
+    editButton.addEventListener('mouseenter', () => {
+        editButton.style.background = '#4361ee';
+        editButton.style.color = 'white';
+    });
+    editButton.addEventListener('mouseleave', () => {
+        editButton.style.background = 'transparent';
+        editButton.style.color = '#4361ee';
+    });
+    editButton.addEventListener('click', () => {
+        summaryScreen.remove();
+        showWaitingScreen();
+    });
+
+    // Ensamblar la interfaz
+    contentContainer.appendChild(title);
+    contentContainer.appendChild(subtitle);
+    contentContainer.appendChild(cardsContainer);
+    contentContainer.appendChild(startGameBtn);
+    contentContainer.appendChild(editButton);
+    summaryScreen.appendChild(contentContainer);
+
+    // Insertar en el DOM
+    const appContainer = document.querySelector('.app-container');
+    appContainer.appendChild(summaryScreen);
+}
+
 function backToGenerator() {
     // Ya no es necesario detener la cámara
     arStream = null;
     gameScreen.classList.add('hidden');
     generatorScreen.classList.remove('hidden');
 
+    // Limpiar pantallas modales que puedan estar abiertas
+    const modals = document.querySelectorAll('[id*="modal"]');
+    modals.forEach(modal => {
+        if (modal && modal.parentNode) {
+            modal.remove();
+        }
+    });
+
+    // Limpiar pantalla de espera si existe
+    const waitingScreen = document.getElementById('waiting-screen');
+    if (waitingScreen && waitingScreen.parentNode) {
+        waitingScreen.remove();
+    }
+
+    // Limpiar pantalla de resumen si existe
+    const summaryScreens = document.querySelectorAll('div[style*="background: white"]');
+    summaryScreens.forEach(screen => {
+        if (screen.style.animation && screen.style.animation.includes('fadeIn')) {
+            screen.remove();
+        }
+    });
+
+    // Reiniciar datos del juego
+    gameData.currentStep = 0;
+    gameData.score = 0;
+    gameData.exercises = [];
+    gameData.filteredExercises = [];
+
+    // Limpiar elementos de la pantalla del juego
     operationDisplay.textContent = '';
     optionsContainer.innerHTML = '';
     validateContainer.innerHTML = '';
+    scoreDisplay.textContent = 'Puntuación: 0';
+
+    // Reiniciar valores por defecto
+    levelSelect.value = 'basico';
+    exerciseCountInput.value = '1';
+    
+    // Recargar los ejercicios del nivel básico
+    loadExerciseBank();
+
+    // Remover configuración guardada
+    localStorage.removeItem('gameConfig');
 }
 
 // Función separada para mostrar texto flotante AR
