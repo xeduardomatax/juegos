@@ -932,6 +932,25 @@ function showWaitingScreen() {
                 border: 2px dashed ${stageColors[stage]};
                 font-size: 0.9rem;
             `;
+            
+            // Crear elemento de audio para reproducción
+            const audioPlayer = document.createElement('audio');
+            audioPlayer.controls = true;
+            audioPlayer.style.cssText = `
+                width: 100%;
+                margin: 0.8rem 0;
+                border-radius: 8px;
+            `;
+            
+            const previewInfo = document.createElement('div');
+            previewInfo.style.cssText = `
+                margin: 0.5rem 0;
+                color: ${stageColors[stage]};
+                font-weight: 600;
+            `;
+            
+            previewDiv.appendChild(previewInfo);
+            previewDiv.appendChild(audioPlayer);
             container.appendChild(previewDiv);
 
             const uploadBtn = document.createElement('button');
@@ -969,7 +988,12 @@ function showWaitingScreen() {
                     return;
                 }
                 const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                previewDiv.innerHTML = `<strong style="color: ${stageColors[stage]};">Vista previa:</strong><br>🔊 ${file.name} (${fileSize} MB)`;
+                previewInfo.innerHTML = `🔊 ${file.name} (${fileSize} MB)`;
+                
+                // Crear URL temporal para reproducción
+                const audioUrl = URL.createObjectURL(file);
+                audioPlayer.src = audioUrl;
+                
                 previewDiv.style.display = 'block';
                 examineBtn.textContent = '✅ Seleccionado';
             });
@@ -1067,6 +1091,27 @@ function showWaitingScreen() {
                 border: 2px dashed ${stageColors[stage]};
                 font-size: 0.9rem;
             `;
+            
+            // Crear elemento de video para reproducción
+            const videoPlayer = document.createElement('video');
+            videoPlayer.controls = true;
+            videoPlayer.style.cssText = `
+                width: 100%;
+                max-height: 200px;
+                margin: 0.8rem 0;
+                border-radius: 8px;
+                background: #000;
+            `;
+            
+            const previewInfo = document.createElement('div');
+            previewInfo.style.cssText = `
+                margin: 0.5rem 0;
+                color: ${stageColors[stage]};
+                font-weight: 600;
+            `;
+            
+            previewDiv.appendChild(previewInfo);
+            previewDiv.appendChild(videoPlayer);
             container.appendChild(previewDiv);
 
             const uploadBtn = document.createElement('button');
@@ -1104,7 +1149,12 @@ function showWaitingScreen() {
                     return;
                 }
                 const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                previewDiv.innerHTML = `<strong style="color: ${stageColors[stage]};">Vista previa:</strong><br>🎬 ${file.name} (${fileSize} MB)`;
+                previewInfo.innerHTML = `🎬 ${file.name} (${fileSize} MB)`;
+                
+                // Crear URL temporal para reproducción
+                const videoUrl = URL.createObjectURL(file);
+                videoPlayer.src = videoUrl;
+                
                 previewDiv.style.display = 'block';
                 examineBtn.textContent = '✅ Seleccionado';
             });
