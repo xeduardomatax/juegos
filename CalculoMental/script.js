@@ -600,15 +600,7 @@ function showWaitingScreen() {
             gap: 1.5rem;
         `;
 
-        // Verificar si la etapa ya tiene contenido configurado
-        const hasContent = config[stage] && (
-            (config[stage]['Texto'] && config[stage]['TextoValor']) ||
-            (config[stage]['Imagen'] && config[stage]['ImagenUrl']) ||
-            (config[stage]['Audio'] && config[stage]['AudioUrl']) ||
-            (config[stage]['Video'] && config[stage]['VideoUrl'])
-        );
-
-        // Encabezado con indicador de estado
+        // Encabezado
         const header = document.createElement('div');
         header.style.cssText = `
             font-size: 1.3rem;
@@ -617,42 +609,8 @@ function showWaitingScreen() {
             text-align: center;
             padding-bottom: 1rem;
             border-bottom: 2px solid ${stageColors[stage]};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.8rem;
         `;
-        
-        const statusIcon = document.createElement('span');
-        statusIcon.textContent = hasContent ? '✅' : '⚠️';
-        statusIcon.style.fontSize = '1.5rem';
-        statusIcon.id = `status-${stage}`;
-        
-        const headerText = document.createElement('span');
-        headerText.textContent = `${stageIcons[stage]} Configurar ${stage}`;
-        
-        header.appendChild(statusIcon);
-        header.appendChild(headerText);
-        
-        // Agregar mensaje de alerta si no está configurado
-        if (!hasContent) {
-            const warningMsg = document.createElement('div');
-            warningMsg.style.cssText = `
-                background: #fff3cd;
-                color: #856404;
-                border-left: 4px solid #ffc107;
-                padding: 0.8rem;
-                border-radius: 8px;
-                margin-top: 0.5rem;
-                font-size: 0.9rem;
-                font-weight: 500;
-            `;
-            warningMsg.textContent = `⚠️ Debes configurar al menos un contenido en esta sección`;
-            header.appendChild(warningMsg);
-            header.style.flexDirection = 'column';
-            header.style.alignItems = 'flex-start';
-        }
-        
+        header.textContent = `${stageIcons[stage]} Configurar ${stage}`;
         panel.appendChild(header);
 
         // Contenedor de botones de tipos
@@ -771,6 +729,7 @@ function showWaitingScreen() {
                 config[stage]['TextoValor'] = input.value;
                 config[stage]['Texto'] = true;
                 localStorage.setItem('gameConfig', JSON.stringify(config));
+                updateUI();
                 saveBtn.textContent = '✅ Guardado';
                 setTimeout(() => { saveBtn.textContent = 'Guardar texto'; }, 1200);
             });
@@ -900,6 +859,7 @@ function showWaitingScreen() {
                             config[stage]['ImagenUrl'] = data.url || '';
                             config[stage]['Imagen'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
+                            updateUI();
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
@@ -1059,6 +1019,7 @@ function showWaitingScreen() {
                             config[stage]['AudioUrl'] = data.url || '';
                             config[stage]['Audio'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
+                            updateUI();
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
@@ -1220,6 +1181,7 @@ function showWaitingScreen() {
                             config[stage]['VideoUrl'] = data.url || '';
                             config[stage]['Video'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
+                            updateUI();
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
@@ -2020,6 +1982,24 @@ function showWaitingScreen() {
             if (shouldShow) hasSelectedStages = true;
         });
 
+        // Verificar si hay al menos una etapa con contenido configurado
+        let hasAnyConfiguredStage = false;
+        stages.forEach(stage => {
+            const hasContent = config[stage] && (
+                (config[stage]['Texto'] && config[stage]['TextoValor']) ||
+                (config[stage]['Imagen'] && config[stage]['ImagenUrl']) ||
+                (config[stage]['Audio'] && config[stage]['AudioUrl']) ||
+                (config[stage]['Video'] && config[stage]['VideoUrl'])
+            );
+            if (hasContent) hasAnyConfiguredStage = true;
+        });
+
+        // Mostrar/ocultar y activar/desactivar botón de guardar
+        saveButton.style.display = hasSelectedStages ? 'block' : 'none';
+        saveButton.disabled = !hasAnyConfiguredStage;
+        saveButton.style.opacity = hasAnyConfiguredStage ? '1' : '0.5';
+        saveButton.style.cursor = hasAnyConfiguredStage ? 'pointer' : 'not-allowed';
+
         // Si no hay etapas seleccionadas, limpiar panel
         if (!hasSelectedStages) {
             configPanel.innerHTML = '<p style="text-align: center; color: #999;">Selecciona una etapa para comenzar</p>';
@@ -2069,10 +2049,7 @@ function showWaitingScreen() {
         });
     }
 
-    // Inicializar UI (sin etapas seleccionadas inicialmente)
-    updateUI();
-
-    // Botón para guardar toda la configuración
+    // Botón para guardar toda la configuración (DEBE SER ANTES DE updateUI())
     const saveButton = document.createElement('button');
     saveButton.textContent = '💾 Guardar Configuración';
     saveButton.style.cssText = `
@@ -2083,15 +2060,22 @@ function showWaitingScreen() {
         border-radius: 18px;
         font-size: 1.2rem;
         font-weight: 700;
-        cursor: pointer;
+        cursor: not-allowed;
         box-shadow: 0 8px 24px rgba(67, 97, 238, 0.25);
-        transition: transform 0.3s, background 0.3s;
+        transition: transform 0.3s, background 0.3s, opacity 0.3s;
         margin: 1.5rem auto 0 auto;
-        display: block;
+        display: none;
         align-self: center;
+        opacity: 0.5;
     `;
+    saveButton.disabled = true;
+
+    // Inicializar UI (sin etapas seleccionadas inicialmente)
+    updateUI();
     saveButton.addEventListener('mouseenter', () => {
-        saveButton.style.transform = 'scale(1.05)';
+        if (!saveButton.disabled) {
+            saveButton.style.transform = 'scale(1.05)';
+        }
     });
     saveButton.addEventListener('mouseleave', () => {
         saveButton.style.transform = 'scale(1)';
