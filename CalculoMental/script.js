@@ -2329,11 +2329,11 @@ function showConfigurationSummary(config) {
     `;
     startGameBtn.addEventListener('mouseenter', () => {
         startGameBtn.style.transform = 'scale(1.05)';
-        startGameBtn.style.background = 'linear-gradient(90deg, #43aa8b 60%, #4361ee 100%)';
+        startGameBtn.style.boxShadow = '0 12px 32px rgba(67, 97, 238, 0.4)';
     });
     startGameBtn.addEventListener('mouseleave', () => {
         startGameBtn.style.transform = 'scale(1)';
-        startGameBtn.style.background = 'linear-gradient(90deg, #4361ee 60%, #43aa8b 100%)';
+        startGameBtn.style.boxShadow = '0 8px 24px rgba(67, 97, 238, 0.3)';
     });
     startGameBtn.addEventListener('click', () => {
         summaryScreen.remove();
