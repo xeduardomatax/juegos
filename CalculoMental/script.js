@@ -2095,7 +2095,7 @@ function showConfigurationSummary(config) {
 
     // Título
     const title = document.createElement('h2');
-    title.textContent = '📋 Resumen de Configuración';
+    title.textContent = '📋 Resumen de Configuración - Cálculo Mental RA';
     title.style.cssText = `
         color: var(--secondary);
         font-size: 2rem;
