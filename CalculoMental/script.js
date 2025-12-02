@@ -729,11 +729,6 @@ function showWaitingScreen() {
                 config[stage]['TextoValor'] = input.value;
                 config[stage]['Texto'] = true;
                 localStorage.setItem('gameConfig', JSON.stringify(config));
-                hasContentSaved = true;
-                // Habilitar botón de guardar
-                saveButton.disabled = false;
-                saveButton.style.cursor = 'pointer';
-                saveButton.style.opacity = '1';
                 saveBtn.textContent = '✅ Guardado';
                 setTimeout(() => { saveBtn.textContent = 'Guardar texto'; }, 1200);
             });
@@ -863,11 +858,6 @@ function showWaitingScreen() {
                             config[stage]['ImagenUrl'] = data.url || '';
                             config[stage]['Imagen'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
-                            hasContentSaved = true;
-                            // Habilitar botón de guardar
-                            saveButton.disabled = false;
-                            saveButton.style.cursor = 'pointer';
-                            saveButton.style.opacity = '1';
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
@@ -1027,11 +1017,6 @@ function showWaitingScreen() {
                             config[stage]['AudioUrl'] = data.url || '';
                             config[stage]['Audio'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
-                            hasContentSaved = true;
-                            // Habilitar botón de guardar
-                            saveButton.disabled = false;
-                            saveButton.style.cursor = 'pointer';
-                            saveButton.style.opacity = '1';
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
@@ -1193,11 +1178,6 @@ function showWaitingScreen() {
                             config[stage]['VideoUrl'] = data.url || '';
                             config[stage]['Video'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
-                            hasContentSaved = true;
-                            // Habilitar botón de guardar
-                            saveButton.disabled = false;
-                            saveButton.style.cursor = 'pointer';
-                            saveButton.style.opacity = '1';
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
@@ -1659,11 +1639,6 @@ function showWaitingScreen() {
                         config[stage]['AudioUrl'] = data.url || '';
                         config[stage]['Audio'] = true;
                         localStorage.setItem('gameConfig', JSON.stringify(config));
-                        hasContentSaved = true;
-                        // Habilitar botón de guardar
-                        saveButton.disabled = false;
-                        saveButton.style.cursor = 'pointer';
-                        saveButton.style.opacity = '1';
                         
                         setTimeout(() => {
                             uploadBtn.textContent = 'Guardar';
@@ -1853,11 +1828,6 @@ function showWaitingScreen() {
                         config[stage]['VideoUrl'] = data.url || '';
                         config[stage]['Video'] = true;
                         localStorage.setItem('gameConfig', JSON.stringify(config));
-                        hasContentSaved = true;
-                        // Habilitar botón de guardar
-                        saveButton.disabled = false;
-                        saveButton.style.cursor = 'pointer';
-                        saveButton.style.opacity = '1';
                         
                         setTimeout(() => {
                             uploadBtn.textContent = 'Guardar';
@@ -2060,9 +2030,6 @@ function showWaitingScreen() {
     // Inicializar UI (sin etapas seleccionadas inicialmente)
     updateUI();
 
-    // Variable para rastrear si hay contenido guardado
-    let hasContentSaved = false;
-
     // Botón para guardar toda la configuración
     const saveButton = document.createElement('button');
     saveButton.textContent = '💾 Guardar Configuración';
@@ -2074,55 +2041,45 @@ function showWaitingScreen() {
         border-radius: 18px;
         font-size: 1.2rem;
         font-weight: 700;
-        cursor: not-allowed;
+        cursor: pointer;
         box-shadow: 0 8px 24px rgba(67, 97, 238, 0.25);
-        transition: transform 0.3s, background 0.3s, opacity 0.3s;
+        transition: transform 0.3s, background 0.3s;
         margin: 1.5rem auto 0 auto;
-        display: none;
+        display: block;
         align-self: center;
-        opacity: 0.5;
     `;
-    saveButton.disabled = true;
-    
     saveButton.addEventListener('mouseenter', () => {
-        if (!saveButton.disabled) {
-            saveButton.style.transform = 'scale(1.05)';
-        }
+        saveButton.style.transform = 'scale(1.05)';
     });
     saveButton.addEventListener('mouseleave', () => {
-        if (!saveButton.disabled) {
-            saveButton.style.transform = 'scale(1)';
-        }
+        saveButton.style.transform = 'scale(1)';
     });
     // Referencia temporal al botón de inicio - YA NO SE USA
     let startButtonRef = null;
     
     saveButton.addEventListener('click', () => {
-        // Validar que todas las etapas seleccionadas tengan al menos un tipo de contenido configurado
-        let allStagesConfigured = true;
-        let missingStages = [];
+        // Validar que todas las etapas seleccionadas tengan al menos una configuración
+        let validationError = '';
         
         stages.forEach(stage => {
             if (selectedStages[stage]) {
                 // Verificar si la etapa tiene al menos un tipo de contenido configurado
-                const stageConfig = config[stage];
-                const hasContent = stageConfig && (
-                    (stageConfig['Texto'] && stageConfig['TextoValor']) ||
-                    (stageConfig['Imagen'] && stageConfig['ImagenUrl']) ||
-                    (stageConfig['Audio'] && stageConfig['AudioUrl']) ||
-                    (stageConfig['Video'] && stageConfig['VideoUrl'])
+                const hasContent = config[stage] && (
+                    (config[stage]['Texto'] && config[stage]['TextoValor']) ||
+                    (config[stage]['Imagen'] && config[stage]['ImagenUrl']) ||
+                    (config[stage]['Audio'] && config[stage]['AudioUrl']) ||
+                    (config[stage]['Video'] && config[stage]['VideoUrl'])
                 );
                 
                 if (!hasContent) {
-                    allStagesConfigured = false;
-                    missingStages.push(stage);
+                    validationError += `\n• ${stage}: Debes configurar al menos un contenido (texto, imagen, audio o video)`;
                 }
             }
         });
         
-        // Si no todas las etapas están configuradas, mostrar error
-        if (!allStagesConfigured) {
-            alert(`❌ Error: Las siguientes etapas no tienen contenido configurado:\n\n• ${missingStages.join('\n• ')}\n\nDebes configurar al menos un tipo de contenido (Texto, Imagen, Audio o Video) en cada etapa seleccionada.`);
+        // Si hay errores de validación, mostrar alerta
+        if (validationError) {
+            alert('❌ No puedes guardar la configuración:\n' + validationError);
             return;
         }
         
