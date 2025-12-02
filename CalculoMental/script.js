@@ -1978,9 +1978,6 @@ function showWaitingScreen() {
             if (shouldShow) hasSelectedStages = true;
         });
 
-        // Mostrar o ocultar botón de guardar según si hay etapas seleccionadas
-        saveButton.style.display = hasSelectedStages ? 'block' : 'none';
-
         // Si no hay etapas seleccionadas, limpiar panel
         if (!hasSelectedStages) {
             configPanel.innerHTML = '<p style="text-align: center; color: #999;">Selecciona una etapa para comenzar</p>';
@@ -2046,9 +2043,9 @@ function showWaitingScreen() {
         font-weight: 700;
         cursor: pointer;
         box-shadow: 0 8px 24px rgba(67, 97, 238, 0.25);
-        transition: transform 0.3s, background 0.3s, opacity 0.3s;
+        transition: transform 0.3s, background 0.3s;
         margin: 1.5rem auto 0 auto;
-        display: none;
+        display: block;
         align-self: center;
     `;
     saveButton.addEventListener('mouseenter', () => {
@@ -2061,6 +2058,34 @@ function showWaitingScreen() {
     let startButtonRef = null;
     
     saveButton.addEventListener('click', () => {
+        // Validar que todas las etapas seleccionadas tengan al menos un tipo de contenido configurado
+        let allStagesConfigured = true;
+        let missingStages = [];
+        
+        stages.forEach(stage => {
+            if (selectedStages[stage]) {
+                // Verificar si la etapa tiene al menos un tipo de contenido configurado
+                const stageConfig = config[stage];
+                const hasContent = stageConfig && (
+                    (stageConfig['Texto'] && stageConfig['TextoValor']) ||
+                    (stageConfig['Imagen'] && stageConfig['ImagenUrl']) ||
+                    (stageConfig['Audio'] && stageConfig['AudioUrl']) ||
+                    (stageConfig['Video'] && stageConfig['VideoUrl'])
+                );
+                
+                if (!hasContent) {
+                    allStagesConfigured = false;
+                    missingStages.push(stage);
+                }
+            }
+        });
+        
+        // Si no todas las etapas están configuradas, mostrar error
+        if (!allStagesConfigured) {
+            alert(`❌ Error: Las siguientes etapas no tienen contenido configurado:\n\n• ${missingStages.join('\n• ')}\n\nDebes configurar al menos un tipo de contenido (Texto, Imagen, Audio o Video) en cada etapa seleccionada.`);
+            return;
+        }
+        
         localStorage.setItem('gameConfig', JSON.stringify(config));
         saveButton.textContent = '¡Guardado!';
         
