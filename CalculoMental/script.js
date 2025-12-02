@@ -2071,7 +2071,7 @@ function showWaitingScreen() {
 
     // Botón para volver
     const backButton = document.createElement('button');
-    backButton.textContent = 'Volver';
+    backButton.textContent = '← Volver';
     backButton.style.cssText = `
         background: transparent;
         color: var(--primary);
@@ -2086,14 +2086,12 @@ function showWaitingScreen() {
         align-self: center;
     `;
     backButton.addEventListener('mouseenter', () => {
-        backButton.style.background = 'var(--danger)';
-        backButton.style.borderColor = 'var(--danger)';
+        backButton.style.background = '#4361ee';
         backButton.style.color = 'white';
     });
     backButton.addEventListener('mouseleave', () => {
         backButton.style.background = 'transparent';
-        backButton.style.borderColor = 'var(--primary)';
-        backButton.style.color = 'var(--primary)';
+        backButton.style.color = '#4361ee';
     });
     backButton.addEventListener('click', () => {
         waitingScreen.remove();
