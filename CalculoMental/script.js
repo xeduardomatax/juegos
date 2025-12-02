@@ -1978,6 +1978,9 @@ function showWaitingScreen() {
             if (shouldShow) hasSelectedStages = true;
         });
 
+        // Mostrar o ocultar botón de guardar según si hay etapas seleccionadas
+        saveButton.style.display = hasSelectedStages ? 'block' : 'none';
+
         // Si no hay etapas seleccionadas, limpiar panel
         if (!hasSelectedStages) {
             configPanel.innerHTML = '<p style="text-align: center; color: #999;">Selecciona una etapa para comenzar</p>';
@@ -2043,9 +2046,9 @@ function showWaitingScreen() {
         font-weight: 700;
         cursor: pointer;
         box-shadow: 0 8px 24px rgba(67, 97, 238, 0.25);
-        transition: transform 0.3s, background 0.3s;
+        transition: transform 0.3s, background 0.3s, opacity 0.3s;
         margin: 1.5rem auto 0 auto;
-        display: block;
+        display: none;
         align-self: center;
     `;
     saveButton.addEventListener('mouseenter', () => {
