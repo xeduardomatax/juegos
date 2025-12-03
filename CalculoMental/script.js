@@ -732,8 +732,12 @@ function showWaitingScreen() {
                 config[stage]['Texto'] = true;
                 localStorage.setItem('gameConfig', JSON.stringify(config));
                 updateUI();
-                saveBtn.textContent = '✅ Guardado';
-                setTimeout(() => { saveBtn.textContent = 'Guardar texto'; }, 1200);
+                saveBtn.textContent = '✅ Guardado exitosamente';
+                saveBtn.disabled = true;
+                setTimeout(() => { 
+                    saveBtn.textContent = 'Guardar texto';
+                    saveBtn.disabled = false;
+                }, 3000);
             });
             container.appendChild(saveBtn);
 
@@ -869,7 +873,8 @@ function showWaitingScreen() {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            uploadBtn.textContent = '✅ Guardado';
+                            uploadBtn.textContent = '✅ Guardado exitosamente';
+                            uploadBtn.disabled = true;
                             if (!config[stage]) config[stage] = {};
                             config[stage]['ImagenUrl'] = data.url || '';
                             config[stage]['Imagen'] = true;
@@ -1038,7 +1043,8 @@ function showWaitingScreen() {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            uploadBtn.textContent = '✅ Guardado';
+                            uploadBtn.textContent = '✅ Guardado exitosamente';
+                            uploadBtn.disabled = true;
                             if (!config[stage]) config[stage] = {};
                             config[stage]['AudioUrl'] = data.url || '';
                             config[stage]['Audio'] = true;
@@ -1209,7 +1215,8 @@ function showWaitingScreen() {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            uploadBtn.textContent = '✅ Guardado';
+                            uploadBtn.textContent = '✅ Guardado exitosamente';
+                            uploadBtn.disabled = true;
                             if (!config[stage]) config[stage] = {};
                             config[stage]['VideoUrl'] = data.url || '';
                             config[stage]['Video'] = true;
@@ -2065,8 +2072,9 @@ function showWaitingScreen() {
         
         configPanel.appendChild(stageLabelButtonsContainer);
         
-        // Siempre empezar con Texto al entrar a un nuevo panel
-        configPanel.appendChild(createConfigPanel(currentVisibleStage, 'Texto'));
+        // Restaurar el tipo seleccionado guardado en localStorage, o usar Texto por defecto
+        const savedSelectedType = localStorage.getItem(`selectedType_${currentVisibleStage}`) || 'Texto';
+        configPanel.appendChild(createConfigPanel(currentVisibleStage, savedSelectedType));
 
         // Mostrar el panel
         configPanelsContainer.innerHTML = '';
@@ -2145,14 +2153,16 @@ function showWaitingScreen() {
         }
         
         localStorage.setItem('gameConfig', JSON.stringify(config));
-        saveButton.textContent = '¡Guardado!';
+        saveButton.textContent = '✅ Guardado exitosamente';
+        saveButton.disabled = true;
         
         setTimeout(() => {
             saveButton.textContent = '💾 Guardar Configuración';
+            saveButton.disabled = false;
             // Mostrar pantalla de resumen después de guardar
             waitingScreen.remove();
             showConfigurationSummary(config);
-        }, 1200);
+        }, 3000);
     });
 
     // Botón para volver
