@@ -878,7 +878,7 @@ function showWaitingScreen() {
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
-                            }, 1500);
+                            }, 3000);
                         }
                     })
                     .catch(err => {
@@ -1047,7 +1047,7 @@ function showWaitingScreen() {
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
-                            }, 1500);
+                            }, 3000);
                         }
                     })
                     .catch(() => {
@@ -1218,7 +1218,7 @@ function showWaitingScreen() {
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
-                            }, 1500);
+                            }, 3000);
                         }
                     })
                     .catch(() => {
