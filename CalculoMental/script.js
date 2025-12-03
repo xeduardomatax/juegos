@@ -813,6 +813,21 @@ function showWaitingScreen() {
             container.appendChild(uploadBtn);
 
             let selectedFile = null;
+            
+            // Función para mostrar previsualización
+            function showImagePreview(imageSrc, fileName = null) {
+                previewDiv.innerHTML = `<strong style="color: ${stageColors[stage]};">Vista previa:</strong><br><img src="${imageSrc}" style="max-width: 200px; max-height: 120px; border-radius: 8px; margin-top: 0.8rem;">`;
+                previewDiv.style.display = 'block';
+                if (fileName) {
+                    examineBtn.textContent = '✅ Seleccionado';
+                }
+            }
+            
+            // Mostrar imagen guardada si existe
+            if (config[stage] && config[stage]['ImagenUrl']) {
+                showImagePreview(config[stage]['ImagenUrl']);
+            }
+            
             input.addEventListener('change', () => {
                 const file = input.files[0];
                 selectedFile = file;
@@ -833,9 +848,7 @@ function showWaitingScreen() {
                 }
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    previewDiv.innerHTML = `<strong style="color: ${stageColors[stage]};">Vista previa:</strong><br><img src="${e.target.result}" style="max-width: 200px; max-height: 120px; border-radius: 8px; margin-top: 0.8rem;">`;
-                    previewDiv.style.display = 'block';
-                    examineBtn.textContent = '✅ Seleccionado';
+                    showImagePreview(e.target.result, file.name);
                 };
                 reader.readAsDataURL(file);
             });
@@ -971,6 +984,22 @@ function showWaitingScreen() {
             container.appendChild(uploadBtn);
 
             let selectedFile = null;
+            
+            // Función para mostrar previsualización de audio
+            function showAudioPreview(audioUrl, fileName = null) {
+                previewInfo.innerHTML = fileName || '🔊 Audio guardado';
+                audioPlayer.src = audioUrl;
+                previewDiv.style.display = 'block';
+                if (fileName) {
+                    examineBtn.textContent = '✅ Seleccionado';
+                }
+            }
+            
+            // Mostrar audio guardado si existe
+            if (config[stage] && config[stage]['AudioUrl']) {
+                showAudioPreview(config[stage]['AudioUrl']);
+            }
+            
             input.addEventListener('change', () => {
                 const file = input.files[0];
                 selectedFile = file;
@@ -990,14 +1019,7 @@ function showWaitingScreen() {
                     return;
                 }
                 const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                previewInfo.innerHTML = `🔊 ${file.name} (${fileSize} MB)`;
-                
-                // Crear URL temporal para reproducción
-                const audioUrl = URL.createObjectURL(file);
-                audioPlayer.src = audioUrl;
-                
-                previewDiv.style.display = 'block';
-                examineBtn.textContent = '✅ Seleccionado';
+                showAudioPreview(URL.createObjectURL(file), `🔊 ${file.name} (${fileSize} MB)`);
             });
 
             uploadBtn.addEventListener('click', () => {
@@ -1133,6 +1155,22 @@ function showWaitingScreen() {
             container.appendChild(uploadBtn);
 
             let selectedFile = null;
+            
+            // Función para mostrar previsualización de video
+            function showVideoPreview(videoUrl, fileName = null) {
+                previewInfo.innerHTML = fileName || '🎬 Video guardado';
+                videoPlayer.src = videoUrl;
+                previewDiv.style.display = 'block';
+                if (fileName) {
+                    examineBtn.textContent = '✅ Seleccionado';
+                }
+            }
+            
+            // Mostrar video guardado si existe
+            if (config[stage] && config[stage]['VideoUrl']) {
+                showVideoPreview(config[stage]['VideoUrl']);
+            }
+            
             input.addEventListener('change', () => {
                 const file = input.files[0];
                 selectedFile = file;
@@ -1152,14 +1190,7 @@ function showWaitingScreen() {
                     return;
                 }
                 const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                previewInfo.innerHTML = `🎬 ${file.name} (${fileSize} MB)`;
-                
-                // Crear URL temporal para reproducción
-                const videoUrl = URL.createObjectURL(file);
-                videoPlayer.src = videoUrl;
-                
-                previewDiv.style.display = 'block';
-                examineBtn.textContent = '✅ Seleccionado';
+                showVideoPreview(URL.createObjectURL(file), `🎬 ${file.name} (${fileSize} MB)`);
             });
 
             uploadBtn.addEventListener('click', () => {
