@@ -482,21 +482,21 @@ async function showInstructionsModal() {
             }
             @keyframes slideIn {
                 from { 
-                    transform: translateX(400px);
+                    transform: translate(-50%, -50%) scale(0.8);
                     opacity: 0;
                 }
                 to { 
-                    transform: translateX(0);
+                    transform: translate(-50%, -50%) scale(1);
                     opacity: 1;
                 }
             }
             @keyframes slideOut {
                 from { 
-                    transform: translateX(0);
+                    transform: translate(-50%, -50%) scale(1);
                     opacity: 1;
                 }
                 to { 
-                    transform: translateX(400px);
+                    transform: translate(-50%, -50%) scale(0.8);
                     opacity: 0;
                 }
             }
@@ -509,12 +509,13 @@ async function showInstructionsModal() {
 }
 
 // Función para mostrar mensajes personalizados (toast)
-function showCustomNotification(message, type = 'error', duration = 3000) {
+function showCustomNotification(message, type = 'error', duration = 2000) {
     const toast = document.createElement('div');
     toast.style.cssText = `
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         padding: 1rem 1.5rem;
         border-radius: 12px;
         font-weight: 600;
@@ -2228,7 +2229,7 @@ function showWaitingScreen() {
         
         // Si hay errores de validación, mostrar alerta
         if (validationError) {
-            showCustomNotification(`No puedes guardar la configuración: ${validationError}`, 'error', 4000);
+            showCustomNotification(`No puedes guardar la configuración: ${validationError}`, 'error', 3000);
             return;
         }
         
