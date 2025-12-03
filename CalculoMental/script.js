@@ -1983,6 +1983,8 @@ function showWaitingScreen() {
         `;
         labelBtn.addEventListener('click', () => {
             currentVisibleStage = stage;
+            // Limpiar el tipo seleccionado para esta etapa para que abra en Texto
+            localStorage.removeItem(`selectedType_${stage}`);
             updateUI();
         });
         labelBtn.addEventListener('mouseenter', () => {
