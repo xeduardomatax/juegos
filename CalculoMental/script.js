@@ -577,6 +577,17 @@ function showWaitingScreen() {
     stages.forEach(stage => {
         selectedStages[stage] = false;
     });
+    
+    // Cargar etapas seleccionadas guardadas anteriormente
+    const savedSelectedStages = localStorage.getItem('selectedStages');
+    if (savedSelectedStages) {
+        try {
+            const loaded = JSON.parse(savedSelectedStages);
+            selectedStages = { ...selectedStages, ...loaded };
+        } catch (e) {
+            console.log('Error cargando etapas seleccionadas');
+        }
+    }
 
     // Contenedor de paneles de configuración
     const configPanelsContainer = document.createElement('div');
@@ -1919,6 +1930,7 @@ function showWaitingScreen() {
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
+        checkbox.checked = selectedStages[stage];
         checkbox.style.cssText = `
             width: 20px;
             height: 20px;
@@ -2157,6 +2169,7 @@ function showWaitingScreen() {
         }
         
         localStorage.setItem('gameConfig', JSON.stringify(config));
+        localStorage.setItem('selectedStages', JSON.stringify(selectedStages));
         saveButton.textContent = '✅ Guardado exitosamente';
         saveButton.disabled = true;
         
