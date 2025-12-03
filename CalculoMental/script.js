@@ -481,24 +481,32 @@ async function showInstructionsModal() {
                 to { opacity: 1; }
             }
             @keyframes slideIn {
-                from { 
-                    transform: translate(-50%, -50%) scale(0.8);
+                0% { 
+                    transform: translate(-50%, -50%) scale(0) rotate(-10deg);
                     opacity: 0;
                 }
-                to { 
-                    transform: translate(-50%, -50%) scale(1);
+                60% {
+                    transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translate(-50%, -50%) scale(1) rotate(0deg);
                     opacity: 1;
                 }
             }
             @keyframes slideOut {
-                from { 
-                    transform: translate(-50%, -50%) scale(1);
+                0% { 
+                    transform: translate(-50%, -50%) scale(1) rotate(0deg);
                     opacity: 1;
                 }
-                to { 
-                    transform: translate(-50%, -50%) scale(0.8);
+                100% { 
+                    transform: translate(-50%, -50%) scale(0) rotate(10deg);
                     opacity: 0;
                 }
+            }
+            @keyframes pulse {
+                0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+                50% { box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
             }
         `;
         document.head.appendChild(style);
@@ -516,14 +524,19 @@ function showCustomNotification(message, type = 'error', duration = 2000) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.95rem;
+        padding: 1.2rem 1.8rem;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
         z-index: 10000;
-        animation: slideIn 0.3s ease-out;
+        animation: slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         max-width: 400px;
         box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        animation-name: slideIn;
+        animation-duration: 0.5s;
+        animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
     `;
     
     if (type === 'error') {
@@ -541,10 +554,10 @@ function showCustomNotification(message, type = 'error', duration = 2000) {
     document.body.appendChild(toast);
     
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-out';
+        toast.style.animation = 'slideOut 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards';
         setTimeout(() => {
             toast.remove();
-        }, 300);
+        }, 400);
     }, duration);
 }
 
