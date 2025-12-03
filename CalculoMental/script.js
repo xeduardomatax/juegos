@@ -731,12 +731,12 @@ function showWaitingScreen() {
                 config[stage]['TextoValor'] = input.value;
                 config[stage]['Texto'] = true;
                 localStorage.setItem('gameConfig', JSON.stringify(config));
-                updateUI();
                 saveBtn.textContent = '✅ Guardado exitosamente';
                 saveBtn.disabled = true;
                 setTimeout(() => { 
                     saveBtn.textContent = 'Guardar texto';
                     saveBtn.disabled = false;
+                    updateUI();
                 }, 3000);
             });
             container.appendChild(saveBtn);
@@ -879,10 +879,12 @@ function showWaitingScreen() {
                             config[stage]['ImagenUrl'] = data.url || '';
                             config[stage]['Imagen'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
-                            updateUI();
+                            uploadBtn.textContent = '✅ Guardado exitosamente';
+                            uploadBtn.disabled = true;
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
+                                updateUI();
                             }, 3000);
                         }
                     })
@@ -1049,10 +1051,10 @@ function showWaitingScreen() {
                             config[stage]['AudioUrl'] = data.url || '';
                             config[stage]['Audio'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
-                            updateUI();
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
+                                updateUI();
                             }, 3000);
                         }
                     })
@@ -1221,10 +1223,10 @@ function showWaitingScreen() {
                             config[stage]['VideoUrl'] = data.url || '';
                             config[stage]['Video'] = true;
                             localStorage.setItem('gameConfig', JSON.stringify(config));
-                            updateUI();
                             setTimeout(() => {
                                 uploadBtn.textContent = 'Guardar';
                                 uploadBtn.disabled = false;
+                                updateUI();
                             }, 3000);
                         }
                     })
