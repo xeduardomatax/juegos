@@ -2065,9 +2065,8 @@ function showWaitingScreen() {
         
         configPanel.appendChild(stageLabelButtonsContainer);
         
-        // Obtener el tipo seleccionado guardado en localStorage
-        const savedSelectedType = localStorage.getItem(`selectedType_${currentVisibleStage}`) || 'Texto';
-        configPanel.appendChild(createConfigPanel(currentVisibleStage, savedSelectedType));
+        // Siempre empezar con Texto al entrar a un nuevo panel
+        configPanel.appendChild(createConfigPanel(currentVisibleStage, 'Texto'));
 
         // Mostrar el panel
         configPanelsContainer.innerHTML = '';
