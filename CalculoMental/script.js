@@ -738,6 +738,11 @@ function showWaitingScreen() {
                 transition: all 0.3s;
             `;
             saveBtn.addEventListener('click', () => {
+                // Validar que el texto no esté vacío
+                if (!input.value.trim()) {
+                    alert('❌ El texto no puede estar vacío. Por favor, ingresa al menos un carácter.');
+                    return;
+                }
                 if (!config[stage]) config[stage] = {};
                 config[stage]['TextoValor'] = input.value;
                 config[stage]['Texto'] = true;
