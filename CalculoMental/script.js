@@ -592,7 +592,7 @@ function showWaitingScreen() {
     const typeIcons = { 'Texto': '📝', 'Imagen': '🖼️', 'Audio': '🔊', 'Video': '🎬' };
 
     // Función para crear el panel de configuración
-    function createConfigPanel(stage) {
+    function createConfigPanel(stage, selectedTypeParam = 'Texto') {
         const panel = document.createElement('div');
         panel.style.cssText = `
             display: flex;
@@ -623,7 +623,7 @@ function showWaitingScreen() {
         `;
 
         // Variable para rastrear el tipo seleccionado
-        let selectedType = 'Texto';
+        let selectedType = selectedTypeParam;
 
         // Crear botones de tipos
         const typeButtons = {};
@@ -645,6 +645,8 @@ function showWaitingScreen() {
 
             typeBtn.addEventListener('click', () => {
                 selectedType = type;
+                // Guardar el tipo seleccionado
+                localStorage.setItem(`selectedType_${stage}`, selectedType);
                 // Actualizar estilos de botones
                 types.forEach(t => {
                     const isSelected = t === selectedType;
@@ -683,7 +685,7 @@ function showWaitingScreen() {
             gap: 0.8rem;
         `;
 
-        // Cargar contenido inicial (Texto)
+        // Cargar contenido inicial (Texto o el tipo guardado)
         loadTypeContent(stage, selectedType, contentDiv);
         panel.appendChild(contentDiv);
 
@@ -2062,7 +2064,10 @@ function showWaitingScreen() {
         });
         
         configPanel.appendChild(stageLabelButtonsContainer);
-        configPanel.appendChild(createConfigPanel(currentVisibleStage));
+        
+        // Obtener el tipo seleccionado guardado en localStorage
+        const savedSelectedType = localStorage.getItem(`selectedType_${currentVisibleStage}`) || 'Texto';
+        configPanel.appendChild(createConfigPanel(currentVisibleStage, savedSelectedType));
 
         // Mostrar el panel
         configPanelsContainer.innerHTML = '';
