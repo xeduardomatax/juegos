@@ -480,12 +480,71 @@ async function showInstructionsModal() {
                 from { opacity: 0; }
                 to { opacity: 1; }
             }
+            @keyframes slideIn {
+                from { 
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to { 
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from { 
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to { 
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
         `;
         document.head.appendChild(style);
     }
 
     modal.appendChild(content);
     document.body.appendChild(modal);
+}
+
+// Función para mostrar mensajes personalizados (toast)
+function showCustomNotification(message, type = 'error', duration = 3000) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        max-width: 400px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    `;
+    
+    if (type === 'error') {
+        toast.style.background = '#ff6b6b';
+        toast.style.color = 'white';
+    } else if (type === 'success') {
+        toast.style.background = '#43aa8b';
+        toast.style.color = 'white';
+    } else if (type === 'warning') {
+        toast.style.background = '#ffd60a';
+        toast.style.color = '#333';
+    }
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, duration);
 }
 
 function showWaitingScreen() {
@@ -740,7 +799,7 @@ function showWaitingScreen() {
             saveBtn.addEventListener('click', () => {
                 // Validar que el texto no esté vacío
                 if (!input.value.trim()) {
-                    alert('❌ El texto no puede estar vacío. Por favor, ingresa al menos un carácter.');
+                    showCustomNotification('El texto no puede estar vacío. Por favor, ingresa al menos un carácter.', 'error');
                     return;
                 }
                 if (!config[stage]) config[stage] = {};
@@ -857,13 +916,13 @@ function showWaitingScreen() {
                 const validTypes = ['image/jpeg', 'image/png'];
                 const validExt = /\.(jpg|jpeg|png)$/i;
                 if (!validTypes.includes(file.type) || !validExt.test(file.name)) {
-                    alert('Solo .jpg, .jpeg o .png');
+                    showCustomNotification('Solo .jpg, .jpeg o .png', 'error');
                     input.value = '';
                     selectedFile = null;
                     return;
                 }
                 if (file.size > 5 * 1024 * 1024) {
-                    alert('Máximo 5 MB');
+                    showCustomNotification('Máximo 5 MB', 'error');
                     input.value = '';
                     selectedFile = null;
                     return;
@@ -877,7 +936,7 @@ function showWaitingScreen() {
 
             uploadBtn.addEventListener('click', () => {
                 if (!selectedFile) {
-                    alert('Selecciona una imagen primero');
+                    showCustomNotification('Selecciona una imagen primero', 'error');
                     return;
                 }
                 const formData = new FormData();
@@ -905,7 +964,7 @@ function showWaitingScreen() {
                         }
                     })
                     .catch(err => {
-                        alert('Error al guardar');
+                        showCustomNotification('Error al guardar', 'error');
                         uploadBtn.disabled = false;
                         uploadBtn.textContent = 'Guardar';
                     });
@@ -1032,13 +1091,13 @@ function showWaitingScreen() {
                 const validTypes = ['audio/mp3', 'audio/mpeg'];
                 const validExt = /\.(mp3)$/i;
                 if (!validTypes.includes(file.type) || !validExt.test(file.name)) {
-                    alert('Solo .mp3');
+                    showCustomNotification('Solo .mp3', 'error');
                     input.value = '';
                     selectedFile = null;
                     return;
                 }
                 if (file.size > 3 * 1024 * 1024) {
-                    alert('Máximo 3 MB');
+                    showCustomNotification('Máximo 3 MB', 'error');
                     input.value = '';
                     selectedFile = null;
                     return;
@@ -1049,7 +1108,7 @@ function showWaitingScreen() {
 
             uploadBtn.addEventListener('click', () => {
                 if (!selectedFile) {
-                    alert('Selecciona un audio primero');
+                    showCustomNotification('Selecciona un audio primero', 'error');
                     return;
                 }
                 const formData = new FormData();
@@ -1075,7 +1134,7 @@ function showWaitingScreen() {
                         }
                     })
                     .catch(() => {
-                        alert('Error al guardar');
+                        showCustomNotification('Error al guardar', 'error');
                         uploadBtn.disabled = false;
                         uploadBtn.textContent = 'Guardar';
                     });
@@ -1204,13 +1263,13 @@ function showWaitingScreen() {
                 const validTypes = ['video/mp4'];
                 const validExt = /\.(mp4)$/i;
                 if (!validTypes.includes(file.type) || !validExt.test(file.name)) {
-                    alert('Solo .mp4');
+                    showCustomNotification('Solo .mp4', 'error');
                     input.value = '';
                     selectedFile = null;
                     return;
                 }
                 if (file.size > 10 * 1024 * 1024) {
-                    alert('Máximo 10 MB');
+                    showCustomNotification('Máximo 10 MB', 'error');
                     input.value = '';
                     selectedFile = null;
                     return;
@@ -1221,7 +1280,7 @@ function showWaitingScreen() {
 
             uploadBtn.addEventListener('click', () => {
                 if (!selectedFile) {
-                    alert('Selecciona un video primero');
+                    showCustomNotification('Selecciona un video primero', 'error');
                     return;
                 }
                 const formData = new FormData();
@@ -1247,7 +1306,7 @@ function showWaitingScreen() {
                         }
                     })
                     .catch(() => {
-                        alert('Error al guardar');
+                        showCustomNotification('Error al guardar', 'error');
                         uploadBtn.disabled = false;
                         uploadBtn.textContent = 'Guardar';
                     });
@@ -2169,7 +2228,7 @@ function showWaitingScreen() {
         
         // Si hay errores de validación, mostrar alerta
         if (validationError) {
-            alert('❌ No puedes guardar la configuración:\n' + validationError);
+            showCustomNotification(`No puedes guardar la configuración: ${validationError}`, 'error', 4000);
             return;
         }
         
