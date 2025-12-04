@@ -105,6 +105,357 @@ function showGameOver() {
     backBtn.style.display = 'block';
 }
 
+// Configurador de RA - Similar a CalculoMental pero simplificado
+function showRAConfigScreen() {
+    const raConfigScreen = document.createElement('div');
+    raConfigScreen.id = 'ra-config-screen';
+    raConfigScreen.style.cssText = `
+        background: white;
+        padding: 2.5rem 2rem;
+        width: 100%;
+        max-width: 600px;
+        min-height: 100%;
+        animation: fadeIn 0.5s ease-out;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    `;
+
+    // Contenedor principal
+    const contentContainer = document.createElement('div');
+    contentContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        min-height: 60vh;
+        text-align: center;
+        gap: 2rem;
+        width: 100%;
+        padding-left: 2rem;
+    `;
+
+    // Título principal
+    const title = document.createElement('h2');
+    title.textContent = 'Configuración de Realidad Aumentada';
+    title.style.cssText = `
+        color: var(--secondary);
+        font-size: 2.5rem;
+        margin: 0 auto;
+        text-shadow: 0 2px 8px #e0e7ff;
+        animation: bounceIn 0.8s ease-out;
+        text-align: center;
+        width: 100%;
+    `;
+
+    // Subtítulo
+    const subtitle = document.createElement('h3');
+    subtitle.textContent = 'Selecciona la etapa y tipos de contenido';
+    subtitle.style.cssText = `
+        color: var(--primary);
+        font-size: 1.5rem;
+        margin: 1rem 0;
+        font-weight: 500;
+        animation: fadeIn 0.8s ease-out 0.2s both;
+        text-align: center;
+        width: 100%;
+    `;
+
+    // Etapas
+    const stages = ['Inicio', 'Acierto', 'Final'];
+    const stageIcons = { 'Inicio': '🚀', 'Acierto': '✅', 'Final': '🏁' };
+    const stageColors = {
+        'Inicio': '#4361ee',
+        'Acierto': '#43aa8b',
+        'Final': '#ffd60a'
+    };
+
+    // Estado de configuración
+    let config = {};
+    try { config = JSON.parse(localStorage.getItem('encryptionConfig') || '{}'); } catch (e) {}
+
+    // Objeto para rastrear etapas seleccionadas
+    let selectedStages = {};
+    stages.forEach(stage => {
+        selectedStages[stage] = false;
+    });
+
+    // Cargar etapas guardadas
+    const savedSelectedStages = localStorage.getItem('encryptionSelectedStages');
+    if (savedSelectedStages) {
+        try {
+            selectedStages = JSON.parse(savedSelectedStages);
+        } catch (e) {
+            console.log('Error cargando etapas');
+        }
+    }
+
+    // Contenedor de paneles
+    const configPanelsContainer = document.createElement('div');
+    configPanelsContainer.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 520px;
+    `;
+
+    const typeIcons = { 'Texto': '📝', 'Imagen': '🖼️', 'Audio': '🔊', 'Video': '🎬' };
+    const types = ['Texto', 'Imagen', 'Audio', 'Video'];
+
+    // Crear paneles de configuración
+    function createConfigPanel(stage, selectedTypeParam = 'Texto') {
+        const panel = document.createElement('div');
+        panel.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        `;
+
+        // Encabezado con checkbox
+        const headerContainer = document.createElement('div');
+        headerContainer.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid ${stageColors[stage]};
+        `;
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = selectedStages[stage] || false;
+        checkbox.style.cssText = `
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: ${stageColors[stage]};
+        `;
+
+        checkbox.addEventListener('change', () => {
+            selectedStages[stage] = checkbox.checked;
+        });
+
+        const headerText = document.createElement('span');
+        headerText.textContent = `${stageIcons[stage]} Configurar ${stage}`;
+        headerText.style.cssText = `
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: ${stageColors[stage]};
+            flex: 1;
+        `;
+
+        headerContainer.appendChild(checkbox);
+        headerContainer.appendChild(headerText);
+        panel.appendChild(headerContainer);
+
+        // Botones de tipos
+        const typeButtonsContainer = document.createElement('div');
+        typeButtonsContainer.style.cssText = `
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        `;
+
+        let selectedType = selectedTypeParam;
+        const typeButtons = {};
+
+        types.forEach(type => {
+            const typeBtn = document.createElement('button');
+            typeBtn.textContent = `${typeIcons[type]} ${type}`;
+            typeBtn.style.cssText = `
+                background: ${type === selectedType ? stageColors[stage] : '#ffffff'};
+                color: ${type === selectedType ? 'white' : stageColors[stage]};
+                border: 2px solid ${stageColors[stage]};
+                border-radius: 10px;
+                padding: 0.7rem 1.2rem;
+                font-size: 0.95rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                box-shadow: ${type === selectedType ? `0 4px 12px ${stageColors[stage]}40` : 'none'};
+            `;
+
+            typeBtn.addEventListener('click', () => {
+                selectedType = type;
+                localStorage.setItem(`encryptionSelectedType_${stage}`, selectedType);
+                types.forEach(t => {
+                    const isSelected = t === selectedType;
+                    typeButtons[t].style.background = isSelected ? stageColors[stage] : '#ffffff';
+                    typeButtons[t].style.color = isSelected ? 'white' : stageColors[stage];
+                    typeButtons[t].style.boxShadow = isSelected ? `0 4px 12px ${stageColors[stage]}40` : 'none';
+                });
+                contentDiv.innerHTML = '';
+                loadTypeContent(stage, selectedType, contentDiv);
+            });
+
+            typeButtonsContainer.appendChild(typeBtn);
+            typeButtons[type] = typeBtn;
+        });
+
+        panel.appendChild(typeButtonsContainer);
+
+        // Contenedor de contenido
+        const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        `;
+
+        loadTypeContent(stage, selectedType, contentDiv);
+        panel.appendChild(contentDiv);
+
+        return panel;
+    }
+
+    // Cargar contenido por tipo
+    function loadTypeContent(stage, type, container) {
+        container.innerHTML = '';
+
+        if (type === 'Texto') {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.maxLength = 20;
+            input.placeholder = 'Escribe aquí (máx. 20 caracteres)';
+            input.style.cssText = `
+                width: 100%;
+                padding: 10px 12px;
+                border-radius: 8px;
+                border: 1.5px solid #e6eefc;
+                font-size: 1rem;
+                color: var(--primary);
+                text-align: center;
+            `;
+            input.value = (config[stage] && config[stage]['TextoValor']) ? config[stage]['TextoValor'] : '';
+            container.appendChild(input);
+
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Guardar Configuración';
+            saveBtn.style.cssText = `
+                background: linear-gradient(90deg, var(--primary) 60%, var(--success) 100%);
+                color: white;
+                border: none;
+                padding: 0.9rem 1.7rem;
+                border-radius: 18px;
+                cursor: pointer;
+                font-weight: 700;
+                font-size: 1rem;
+                transition: all 0.3s;
+            `;
+
+            saveBtn.addEventListener('click', () => {
+                if (!input.value.trim()) {
+                    showCustomNotification('⚠️ El campo no puede estar vacío', 'warning', 2000);
+                    return;
+                }
+                if (!config[stage]) config[stage] = {};
+                config[stage]['Texto'] = true;
+                config[stage]['TextoValor'] = input.value.trim();
+                localStorage.setItem('encryptionConfig', JSON.stringify(config));
+                saveBtn.textContent = '✅ Guardado exitosamente';
+                saveBtn.style.opacity = '0.8';
+                setTimeout(() => {
+                    saveBtn.textContent = 'Guardar Configuración';
+                    saveBtn.style.opacity = '1';
+                }, 2000);
+            });
+            container.appendChild(saveBtn);
+        }
+    }
+
+    // Crear paneles para cada etapa
+    stages.forEach(stage => {
+        const savedSelectedType = localStorage.getItem(`encryptionSelectedType_${stage}`) || 'Texto';
+        configPanelsContainer.appendChild(createConfigPanel(stage, savedSelectedType));
+    });
+
+    contentContainer.appendChild(title);
+    contentContainer.appendChild(subtitle);
+    contentContainer.appendChild(configPanelsContainer);
+
+    // Botón Continuar
+    const continueBtn = document.createElement('button');
+    continueBtn.textContent = 'Continuar al Juego';
+    continueBtn.style.cssText = `
+        background: linear-gradient(90deg, var(--primary) 60%, var(--success) 100%);
+        color: white;
+        border: none;
+        padding: 0.9rem 2rem;
+        border-radius: 18px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 8px #4361ee33;
+        transition: all 0.3s;
+        margin-top: 2rem;
+        animation: bounceBtn 1.2s infinite alternate;
+    `;
+
+    continueBtn.addEventListener('click', () => {
+        // Guardar etapas seleccionadas
+        localStorage.setItem('encryptionSelectedStages', JSON.stringify(selectedStages));
+        
+        // Mostrar el juego
+        raConfigScreen.remove();
+        splitLayout.classList.remove('hidden');
+        showLevel();
+        showExplanationPanelNoCamera();
+    });
+
+    continueBtn.addEventListener('mouseenter', () => {
+        continueBtn.style.transform = 'scale(1.08)';
+    });
+
+    continueBtn.addEventListener('mouseleave', () => {
+        continueBtn.style.transform = 'scale(1)';
+    });
+
+    contentContainer.appendChild(continueBtn);
+    raConfigScreen.appendChild(contentContainer);
+    document.body.appendChild(raConfigScreen);
+}
+
+function showCustomNotification(message, type = 'error', duration = 2000) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 1.2rem 1.8rem;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1rem;
+        z-index: 10000;
+        animation: slideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        max-width: 400px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        text-align: center;
+    `;
+
+    const colors = {
+        error: '#ff6b6b',
+        success: '#43aa8b',
+        warning: '#ffd60a'
+    };
+
+    toast.style.background = colors[type] || colors.error;
+    toast.style.color = type === 'warning' ? '#333' : '#fff';
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.4s ease-out forwards';
+        setTimeout(() => toast.remove(), 400);
+    }, duration);
+}
+
 function showARValidationModal(isCorrect, callback) {
     // Si la validación es incorrecta, no pedimos cámara: mostramos un modal simple con fondo decorativo
     const modal = document.createElement('div');
@@ -843,13 +1194,9 @@ function startGameFromGenerator() {
     currentLevel = 0;
     score = 0;
     
-    // Hide generator and show the split layout (image left, game right)
+    // Mostrar el configurador de RA
     generatorScreen.classList.add('hidden');
-    splitLayout.classList.remove('hidden');
-    
-    showLevel();
-    // Mostrar el panel explicativo sin activar la cámara al iniciar el juego
-    showExplanationPanelNoCamera();
+    showRAConfigScreen();
 }
 
 // Mostrar generador al cargar
