@@ -33,7 +33,20 @@ const levels = {
 
 let currentLevel = 0;
 let selectedChallenges = [];
-let score = 0; // Nueva variable para la puntuación
+let score = 0;
+
+// Elementos del DOM
+const generatorScreen = document.getElementById('generator-screen');
+const splitLayout = document.querySelector('.split-layout');
+const levelSelect = document.getElementById('level-select');
+const challengeCountInput = document.getElementById('challenge-count');
+const startGameBtn = document.getElementById('startGameBtn');
+const backBtn = document.getElementById('back-btn');
+const levelDisplay = document.getElementById('level');
+const encryptedMessageDisplay = document.getElementById('encrypted-message');
+const userInput = document.getElementById('user-input');
+const checkBtn = document.getElementById('check-btn');
+const scoreDisplay = document.getElementById('score-display');
 
 function encrypt(text) {
     const alphabet = [
@@ -56,37 +69,40 @@ function encrypt(text) {
 }
 
 function showLevel() {
-    document.getElementById('level').textContent = `Nivel ${currentLevel + 1}`;
-    document.getElementById('encrypted-message').textContent = encrypt(phrases[currentLevel]);
-    document.getElementById('user-input').value = '';
-    document.getElementById('score-value').textContent = score; // Actualiza la puntuación
+    levelDisplay.textContent = `Nivel ${currentLevel + 1}`;
+    encryptedMessageDisplay.textContent = encrypt(phrases[currentLevel]);
+    userInput.value = '';
+    scoreDisplay.textContent = `Puntuación: ${score}`;
 }
 
 function checkAnswer() {
-    const userInput = document.getElementById('user-input').value.trim().toUpperCase();
+    const userInputValue = userInput.value.trim().toUpperCase();
     const correct = phrases[currentLevel].toUpperCase();
 
-    const isCorrect = userInput === correct;
+    const isCorrect = userInputValue === correct;
 
     // Mostrar animación AR con cámara
     showARValidationModal(isCorrect, () => {
         if (isCorrect) {
-            score += 10; // Suma 10 puntos si es correcto
+            score++;
         }
         setTimeout(() => {
             currentLevel++;
             if (currentLevel < phrases.length) {
                 showLevel();
             } else {
-                document.getElementById('encrypted-message').textContent = "¡Felicidades! Has terminado el juego.";
-                document.getElementById('level').textContent = "";
-                document.getElementById('user-input').style.display = 'none';
-                document.getElementById('check-btn').style.display = 'none';
-                // Puedes mostrar la puntuación final aquí si lo deseas
-                document.getElementById('score').textContent = `Puntuación final: ${score}`;
+                showGameOver();
             }
         }, 1200);
     });
+}
+
+function showGameOver() {
+    encryptedMessageDisplay.textContent = "¡Felicidades! Has terminado el juego.";
+    levelDisplay.textContent = "";
+    userInput.style.display = 'none';
+    checkBtn.style.display = 'none';
+    backBtn.style.display = 'block';
 }
 
 function showARValidationModal(isCorrect, callback) {
@@ -803,14 +819,14 @@ function showWheelTooltip() {
 function showGenerator() {
     // Hide the split layout (both panes) and show the generator screen
     const split = document.querySelector('.split-layout');
-    if (split) split.style.display = 'none';
-    document.getElementById('generator-screen').style.display = 'block';
+    if (split) split.classList.add('hidden');
+    generatorScreen.classList.remove('hidden');
 }
 
 function startGameFromGenerator() {
     // Obtiene el nivel y cantidad seleccionados
-    const level = document.getElementById('level-select').value;
-    const count = parseInt(document.getElementById('challenge-count').value, 10);
+    const level = levelSelect.value;
+    const count = parseInt(challengeCountInput.value, 10);
 
     // Selecciona retos del nivel
     const pool = levels[level];
@@ -825,11 +841,12 @@ function startGameFromGenerator() {
     phrases.length = 0;
     selectedChallenges.forEach(p => phrases.push(p));
     currentLevel = 0;
-    score = 0; // Reinicia la puntuación al iniciar el juego
+    score = 0;
+    
     // Hide generator and show the split layout (image left, game right)
-    document.getElementById('generator-screen').style.display = 'none';
-    const split = document.querySelector('.split-layout');
-    if (split) split.style.display = 'grid';
+    generatorScreen.classList.add('hidden');
+    splitLayout.classList.remove('hidden');
+    
     showLevel();
     // Mostrar el panel explicativo sin activar la cámara al iniciar el juego
     showExplanationPanelNoCamera();
@@ -839,13 +856,19 @@ function startGameFromGenerator() {
 showGenerator();
 
 // Botón para iniciar el juego
-document.getElementById('start-game-btn').addEventListener('click', startGameFromGenerator);
-document.getElementById('check-btn').addEventListener('click', checkAnswer);
-document.getElementById('user-input').addEventListener('keydown', function(e) {
+startGameBtn.addEventListener('click', startGameFromGenerator);
+checkBtn.addEventListener('click', checkAnswer);
+userInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') checkAnswer();
 });
 
-showLevel();
+// Botón para volver al generador
+backBtn.addEventListener('click', () => {
+    splitLayout.classList.add('hidden');
+    generatorScreen.classList.remove('hidden');
+    userInput.style.display = 'block';
+    checkBtn.style.display = 'block';
+});
 
 // Hacer que al tocar la imagen de referencia se abra el panel explicativo SIN cámara (historia del cifrado César)
 try {

@@ -2,61 +2,78 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>El mensaje escondido</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encriptación - El mensaje escondido</title>
+    <link rel="stylesheet" href="style.css?v=2025120401">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:ital,wght@1,400;1,700&display=swap" rel="stylesheet">
+    <!-- Meta tags para evitar caché -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 </head>
 <body>
-    <!-- Layout dividido: imagen (izquierda) y juego (derecha). Oculto por defecto; se muestra tras Iniciar juego -->
-    <div class="split-layout" style="display:none;">
-        <aside class="left-pane">
-            <div class="container">
-                <h1>El mensaje escondido</h1>
-                <!-- Imagen de referencia para la encriptación -->
-                <div id="reference-image">
-                    <img src="Encriptación.jpg" alt="Tabla de encriptación">
-                    <div style="font-size:0.95em; color:#1565c0; margin-bottom:1em;">Usa la tabla para descifrar el mensaje</div>
-                    <div style="margin-top:0.5em;">
-                        <button id="explain-btn" class="explain-btn">Explicación</button>
+    <div class="app-container">
+        <!-- Pantalla del generador -->
+        <div id="generator-screen">
+            <h1>Encriptación</h1>
+            <div class="level-section">
+                <label for="level-select"><strong>Selecciona nivel de dificultad:</strong></label>
+                <select id="level-select">
+                    <option value="basico">Básico</option>
+                    <option value="intermedio">Intermedio</option>
+                    <option value="avanzado">Avanzado</option>
+                </select>
+                <span id="available-challenges"></span>
+            </div>
+            <div class="exercise-count-section">
+                <label for="challenge-count"><strong>¿Cuántos retos quieres hacer?</strong></label>
+                <select id="challenge-count">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div id="game-options">
+                <button id="startGameBtn">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- Layout dividido: imagen (izquierda) y juego (derecha) -->
+        <div class="split-layout hidden">
+            <aside class="left-pane">
+                <div class="container">
+                    <h1>El mensaje escondido</h1>
+                    <!-- Imagen de referencia para la encriptación -->
+                    <div id="reference-image">
+                        <img src="Encriptación.jpg" alt="Tabla de encriptación">
+                        <div style="font-size:0.95em; color:#1565c0; margin-bottom:1em;">Usa la tabla para descifrar el mensaje</div>
                     </div>
                 </div>
-            </div>
-        </aside>
+            </aside>
 
-        <main class="right-pane">
-            <div class="container game-container">
-                <div id="level">Nivel 1</div>
-                <div id="score" style="color:#1565c0; font-size:1.1em; margin-bottom:0.5em;">
-                    Puntuación: <span id="score-value">0</span>
+            <main class="right-pane">
+                <div class="container game-container">
+                    <h1>Encriptación</h1>
+                    <div id="level"></div>
+                    <div id="encrypted-message"></div>
+                    <div id="space-hint" style="color:#1976d2; font-size:1em; margin-bottom:1em;">
+                        <b>Nota:</b> Los espacios en el mensaje encriptado indican separación entre palabras.
+                    </div>
+                    <input type="text" id="user-input" placeholder="Escribe el mensaje original">
+                    <button id="check-btn">Comprobar</button>
+                    <div id="feedback">
+                        <img id="character" src="https://cdn.pixabay.com/photo/2013/07/13/12/07/smiley-145924_1280.png" alt="Personaje" style="display:none;">
+                        <span id="result"></span>
+                    </div>
+                    <div id="score-display">Puntuación: 0</div>
+                    <button id="back-btn">Volver al Generador</button>
                 </div>
-                <div id="encrypted-message"></div>
-                <div id="space-hint" style="color:#1976d2; font-size:1em; margin-bottom:1em;">
-                    <b>Nota:</b> Los espacios en el mensaje encriptado indican separación entre palabras.
-                </div>
-                <input type="text" id="user-input" placeholder="Escribe el mensaje original">
-                <button id="check-btn">Comprobar</button>
-                <div id="feedback">
-                    <img id="character" src="https://cdn.pixabay.com/photo/2013/07/13/12/07/smiley-145924_1280.png" alt="Personaje" style="display:none;">
-                    <span id="result"></span>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
-    <div id="generator-screen" class="container" style="margin-bottom: 20px;">
-        <h2>Generador de retos</h2>
-        <label for="level-select">Nivel:</label>
-        <select id="level-select">
-            <option value="basico">Básico</option>
-            <option value="intermedio">Intermedio</option>
-            <option value="avanzado">Avanzado</option>
-        </select>
-        <br><br>
-        <label for="challenge-count">Cantidad de retos:</label>
-        <input type="number" id="challenge-count" min="1" max="5" value="5" style="width:60px;">
-        <br><br>
-        <button id="start-game-btn">Iniciar juego</button>
-    </div>
-    <script src="script.js"></script>
+    <script src="script.js?v=2025120401"></script>
 </body>
 </html>
 
