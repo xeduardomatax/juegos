@@ -114,26 +114,24 @@ function showRAConfigScreen() {
         padding: 2.5rem 2rem;
         width: 100%;
         max-width: 600px;
-        min-height: 100%;
+        min-height: 100vh;
         animation: fadeIn 0.5s ease-out;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        margin: 0 auto;
     `;
 
-    // Contenedor principal
+    // Contenedor principal centrado
     const contentContainer = document.createElement('div');
     contentContainer.style.cssText = `
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
-        min-height: 60vh;
-        text-align: center;
+        align-items: center;
+        justify-content: center;
         gap: 2rem;
         width: 100%;
-        padding-left: 2rem;
     `;
 
     // Título principal
@@ -199,6 +197,7 @@ function showRAConfigScreen() {
         gap: 1.5rem;
         width: 100%;
         max-width: 520px;
+        align-items: center;
     `;
 
     const typeIcons = { 'Texto': '📝', 'Imagen': '🖼️', 'Audio': '🔊', 'Video': '🎬' };
@@ -398,8 +397,10 @@ function showRAConfigScreen() {
         // Guardar etapas seleccionadas
         localStorage.setItem('encryptionSelectedStages', JSON.stringify(selectedStages));
         
-        // Mostrar el juego
+        // Remover pantalla de configuración
         raConfigScreen.remove();
+        
+        // Mostrar el juego
         splitLayout.classList.remove('hidden');
         showLevel();
         showExplanationPanelNoCamera();
